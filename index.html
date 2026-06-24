@@ -1,0 +1,1709 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>美容室 英語フレーズ学習アプリ</title>
+    <!-- Tailwind CSS (スタイリング用) -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- FontAwesome (アイコン用) -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        .glass-panel {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.3);
+        }
+        .fade-in {
+            animation: fadeIn 0.4s ease-out;
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(5px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        /* アコーディオンの矢印アニメーション用 */
+        details > summary { list-style: none; }
+        details > summary::-webkit-details-marker { display: none; }
+        
+        /* タイピングエラー時のマス目の揺れ */
+        @keyframes shake {
+            0%, 100% { transform: translateX(0); }
+            25% { transform: translateX(-5px); }
+            50% { transform: translateX(5px); }
+            75% { transform: translateX(-5px); }
+        }
+        .shake { animation: shake 0.3s ease-in-out; }
+
+        /* ヒントなしモードの時は下線を透明にする */
+        .no-hint-mode span {
+            border-bottom-color: transparent !important;
+        }
+
+        /* 画面全体のダメージエフェクト（赤枠フラッシュ） */
+        @keyframes damagePlayer {
+            0% { transform: translateX(0); box-shadow: 0 0 0 rgba(239,68,68,0); }
+            20% { transform: translateX(-10px) rotate(-1deg); box-shadow: 0 0 30px 10px rgba(239,68,68,0.5); }
+            40% { transform: translateX(10px) rotate(1deg); }
+            60% { transform: translateX(-10px) rotate(-1deg); }
+            80% { transform: translateX(10px) rotate(1deg); }
+            100% { transform: translateX(0); box-shadow: 0 0 0 rgba(239,68,68,0); }
+        }
+        .damage-player {
+            animation: damagePlayer 0.4s cubic-bezier(.36,.07,.19,.97) both;
+            border-color: #ef4444 !important;
+        }
+
+        /* --------------------------------------
+           格闘ゲーム キャラクターアニメーション 
+           -------------------------------------- */
+        @keyframes playerAttack {
+            0% { transform: translateX(0) rotate(0deg); }
+            30% { transform: translateX(40px) rotate(20deg); }
+            50% { transform: translateX(50px) rotate(25deg); }
+            100% { transform: translateX(0) rotate(0deg); }
+        }
+        .anim-player-attack { animation: playerAttack 0.2s ease-out; }
+
+        @keyframes enemyAttack {
+            0% { transform: scaleX(-1) translateX(0) rotate(0deg); }
+            30% { transform: scaleX(-1) translateX(40px) rotate(20deg); }
+            50% { transform: scaleX(-1) translateX(50px) rotate(25deg); }
+            100% { transform: scaleX(-1) translateX(0) rotate(0deg); }
+        }
+        .anim-enemy-attack { animation: enemyAttack 0.2s ease-out; }
+
+        @keyframes charDamage {
+            0% { transform: translateX(0); filter: brightness(1) drop-shadow(0 0 0 red); }
+            20% { transform: translateX(-15px) rotate(-15deg); filter: brightness(1.5) drop-shadow(0 0 10px red); }
+            40% { transform: translateX(10px) rotate(10deg); }
+            60% { transform: translateX(-10px) rotate(-10deg); }
+            100% { transform: translateX(0) rotate(0deg); filter: brightness(1) drop-shadow(0 0 0 red); }
+        }
+        .anim-char-damage { animation: charDamage 0.3s ease-in-out; }
+
+        @keyframes enemyCharDamage {
+            0% { transform: scaleX(-1) translateX(0); filter: brightness(1) drop-shadow(0 0 0 red); }
+            20% { transform: scaleX(-1) translateX(-15px) rotate(-15deg); filter: brightness(1.5) drop-shadow(0 0 10px red); }
+            40% { transform: scaleX(-1) translateX(10px) rotate(10deg); }
+            60% { transform: scaleX(-1) translateX(-10px) rotate(-10deg); }
+            100% { transform: scaleX(-1) translateX(0) rotate(0deg); filter: brightness(1) drop-shadow(0 0 0 red); }
+        }
+        .anim-enemy-char-damage { animation: enemyCharDamage 0.3s ease-in-out; }
+
+        @keyframes hitPop {
+            0% { transform: translate(-50%, -50%) scale(0.5) rotate(-20deg); opacity: 1; }
+            50% { transform: translate(-50%, -50%) scale(2) rotate(10deg); opacity: 1; }
+            100% { transform: translate(-50%, -50%) scale(2.5) rotate(0deg); opacity: 0; }
+        }
+        .anim-hit { animation: hitPop 0.3s ease-out forwards; display: block !important; }
+
+        /* --------------------------------------
+           疑問詞特訓用（落ちものゲーム）エフェクト 
+           -------------------------------------- */
+        .wh-correct {
+            animation: whPop 0.2s ease-out forwards;
+        }
+        @keyframes whPop {
+            0% { transform: scale(1); opacity: 1; }
+            100% { transform: scale(1.2); opacity: 0; filter: brightness(1.5); }
+        }
+        .wh-wrong {
+            animation: shake 0.3s ease-in-out;
+            background-color: #fee2e2 !important;
+            border-color: #ef4444 !important;
+        }
+        .wh-score-pop {
+            animation: scorePop 0.5s ease-out forwards;
+        }
+        @keyframes scorePop {
+            0% { transform: translate(-50%, 0) scale(0.5); opacity: 1; }
+            100% { transform: translate(-50%, -50px) scale(1.5); opacity: 0; }
+        }
+        .wh-penalty-pop {
+            animation: penaltyPop 0.5s ease-out forwards;
+        }
+        @keyframes penaltyPop {
+            0% { transform: translate(-50%, 0) scale(0.5); opacity: 1; }
+            100% { transform: translate(-50%, -50px) scale(1.5); opacity: 0; }
+        }
+    </style>
+</head>
+<body class="bg-gradient-to-br from-blue-50 to-indigo-100 min-h-screen font-sans text-gray-800 py-6">
+    
+    <div class="max-w-3xl mx-auto px-4 sm:px-6">
+        
+        <!-- ヘッダー -->
+        <header class="text-center mb-8 fade-in">
+            <h1 class="text-2xl sm:text-3xl font-bold text-indigo-800 mb-2"><i class="fas fa-cut mr-2"></i>サロン英語マスター</h1>
+            <p class="text-sm sm:text-base text-gray-600">接客で使える英語フレーズを覚えて、クイズで復習しよう！</p>
+        </header>
+
+        <!-- タブナビゲーション -->
+        <nav class="flex justify-center space-x-2 sm:space-x-3 mb-6 fade-in flex-wrap gap-y-2">
+            <button id="tab-list" class="px-4 py-2 sm:px-5 sm:py-2.5 rounded-full text-sm font-semibold transition-all duration-200 border bg-indigo-600 text-white shadow-md border-indigo-600" onclick="switchTab('list')">
+                <i class="fas fa-book-open mr-1"></i> フレーズ集
+            </button>
+            <button id="tab-quiz" class="px-4 py-2 sm:px-5 sm:py-2.5 rounded-full text-sm font-semibold transition-all duration-200 border bg-white text-indigo-600 hover:bg-indigo-50 shadow-sm border-transparent" onclick="switchTab('quiz')">
+                <i class="fas fa-gamepad mr-1"></i> クイズに挑戦
+            </button>
+            <button id="tab-wh" class="px-4 py-2 sm:px-5 sm:py-2.5 rounded-full text-sm font-semibold transition-all duration-200 border bg-white text-orange-500 hover:bg-orange-50 shadow-sm border-orange-100" onclick="switchTab('wh')">
+                <i class="fas fa-meteor mr-1"></i> 疑問詞特訓 <span class="text-[10px] bg-orange-100 text-orange-600 px-1.5 rounded ml-1 animate-pulse">NEW</span>
+            </button>
+            <button id="tab-admin" class="px-4 py-2 sm:px-5 sm:py-2.5 rounded-full text-sm font-semibold transition-all duration-200 border bg-gray-100 text-gray-600 hover:bg-gray-200 shadow-sm border-transparent" onclick="switchTab('admin')">
+                <i class="fas fa-cog mr-1"></i> 管理 <span class="hidden sm:inline"></span>
+            </button>
+        </nav>
+
+        <!-- メインコンテンツ -->
+        <main id="main-panel" class="glass-panel rounded-2xl shadow-xl p-4 sm:p-8 min-h-[400px] transition-all border border-white">
+            
+            <!-- フレーズ一覧ビュー -->
+            <div id="view-list" class="fade-in">
+                <h2 class="text-lg font-bold border-b-2 border-indigo-100 pb-2 mb-4 text-indigo-900">ストック一覧</h2>
+                <div id="phrase-list-container" class="space-y-4">
+                    <!-- JavaScriptでカードが生成されます -->
+                </div>
+            </div>
+
+            <!-- クイズビュー -->
+            <div id="view-quiz" class="hidden fade-in text-center">
+                
+                <!-- クイズ設定画面 -->
+                <div id="quiz-setup" class="space-y-6 py-8">
+                    <h2 class="text-xl sm:text-2xl font-bold text-gray-800">クイズの形式を選んでください</h2>
+                    <div class="flex flex-col sm:flex-row justify-center gap-4 mt-6">
+                        <button onclick="startQuiz('en2ja')" class="px-4 py-4 bg-indigo-500 hover:bg-indigo-600 text-white rounded-xl shadow-md transition-transform hover:scale-105 active:scale-95 font-bold">
+                            英 <i class="fas fa-arrow-right mx-1"></i> 和 <span class="block text-xs font-normal mt-1 opacity-80">選択式</span>
+                        </button>
+                        <button onclick="startQuiz('ja2en')" class="px-4 py-4 bg-teal-500 hover:bg-teal-600 text-white rounded-xl shadow-md transition-transform hover:scale-105 active:scale-95 font-bold">
+                            和 <i class="fas fa-arrow-right mx-1"></i> 英 <span class="block text-xs font-normal mt-1 opacity-80">選択式</span>
+                        </button>
+                        <button onclick="startQuiz('typing')" class="px-4 py-4 bg-orange-500 hover:bg-orange-600 text-white rounded-xl shadow-md transition-transform hover:scale-105 active:scale-95 font-bold relative overflow-hidden group">
+                            <span class="relative z-10">和 <i class="fas fa-arrow-right mx-1"></i> 英</span>
+                            <span class="block text-xs font-normal mt-1 opacity-80 relative z-10">タイピング (バトル🔥)</span>
+                            <div class="absolute inset-0 bg-red-500 opacity-0 group-hover:opacity-20 transition-opacity"></div>
+                        </button>
+                    </div>
+                    
+                    <div class="mt-8 p-4 bg-gray-50 rounded-xl max-w-sm mx-auto border border-gray-200">
+                        <h3 class="font-bold text-gray-700 mb-3 text-sm">タイピングモードのヒント設定</h3>
+                        <div class="flex flex-col gap-2 text-left px-4">
+                            <label class="flex items-center space-x-2 text-sm text-gray-600 cursor-pointer">
+                                <input type="radio" name="hint-level" value="none" class="form-radio text-orange-500">
+                                <span>ヒントなし (完全空欄)</span>
+                            </label>
+                            <label class="flex items-center space-x-2 text-sm text-gray-600 cursor-pointer">
+                                <input type="radio" name="hint-level" value="length" class="form-radio text-orange-500" checked>
+                                <span>文字数（_ _ _）を表示</span>
+                            </label>
+                            <label class="flex items-center space-x-2 text-sm text-gray-600 cursor-pointer">
+                                <input type="radio" name="hint-level" value="initial" class="form-radio text-orange-500">
+                                <span>頭文字＋文字数（H _ _ _ _）を表示</span>
+                            </label>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- クイズプレイ画面 -->
+                <div id="quiz-play" class="hidden flex-col items-center relative">
+                    <button onclick="switchTab('list')" class="absolute top-0 right-0 sm:-top-4 sm:-right-4 p-2 sm:px-4 sm:py-2 bg-gray-100 hover:bg-gray-200 text-gray-600 rounded-full sm:rounded-lg shadow-sm text-xs sm:text-sm font-bold transition-colors z-20" title="フレーズ集に戻る">
+                        <i class="fas fa-list sm:mr-1"></i><span class="hidden sm:inline"> フレーズ集に戻る</span>
+                    </button>
+                    
+                    <!-- 🥊 格闘ゲーム風 HPバー＆キャラ UI -->
+                    <div id="battle-ui" class="w-full hidden flex-col mb-4 bg-gray-800 p-3 pb-0 rounded-xl shadow-lg border-2 border-gray-700 overflow-hidden relative mt-8 sm:mt-0">
+                        <!-- HP情報 -->
+                        <div class="flex justify-between items-end mb-1 px-1 relative z-10">
+                            <div class="font-bold text-blue-400 text-sm tracking-wider"><i class="fas fa-user-ninja mr-1"></i> YOU</div>
+                            <div class="font-black text-yellow-400 italic text-xl px-2 text-shadow" style="text-shadow: 2px 2px 0 #000;">VS</div>
+                            <div class="font-bold text-red-400 text-sm tracking-wider"><span id="enemy-name">ENEMY 1</span> <i class="fas fa-skull ml-1"></i></div>
+                        </div>
+                        <div class="flex justify-between items-center space-x-2 relative z-10">
+                            <!-- Player HP -->
+                            <div class="w-5/12 bg-gray-900 rounded-full h-3 sm:h-4 shadow-inner overflow-hidden border border-gray-600">
+                                <div id="player-hp-bar" class="bg-gradient-to-r from-blue-400 to-blue-600 h-full transition-all duration-300 w-full" style="width: 100%"></div>
+                            </div>
+                            <!-- Enemy HP -->
+                            <div class="w-5/12 bg-gray-900 rounded-full h-3 sm:h-4 shadow-inner overflow-hidden border border-gray-600 flex justify-end">
+                                <div id="enemy-hp-bar" class="bg-gradient-to-l from-red-400 to-red-600 h-full transition-all duration-200 w-full" style="width: 100%"></div>
+                            </div>
+                        </div>
+
+                        <!-- キャラクターアクションエリア -->
+                        <div class="flex justify-between items-end mt-4 px-6 sm:px-16 h-20 sm:h-24 relative select-none">
+                            <div id="player-char" class="text-6xl sm:text-7xl z-10 origin-bottom filter drop-shadow-md">🥷</div>
+                            
+                            <!-- 中央に発生するヒットエフェクト -->
+                            <div id="hit-effect" class="absolute left-1/2 top-1/2 transform -translate-x-1/2 -translate-y-1/2 text-5xl hidden z-20 pointer-events-none">💥</div>
+                            
+                            <div id="enemy-char" class="text-6xl sm:text-7xl z-10 origin-bottom transform -scale-x-100 filter drop-shadow-md">👹</div>
+                        </div>
+                    </div>
+
+                    <div class="w-full flex justify-center gap-6 items-center text-sm sm:text-base font-bold text-gray-500 mb-4 px-2">
+                        <span id="quiz-progress" class="bg-gray-100 px-4 py-1.5 rounded-full">問題: 1 / 4</span>
+                        <span class="bg-gray-100 px-4 py-1.5 rounded-full text-gray-600 shadow-inner">
+                            <i class="fas fa-stopwatch text-indigo-500 mr-1"></i> <span id="quiz-timer" class="font-mono">0.0秒</span>
+                        </span>
+                    </div>
+                    
+                    <div class="bg-white border-2 border-indigo-50 w-full p-6 sm:p-8 rounded-xl shadow-sm mb-6 min-h-[120px] flex flex-col justify-center relative">
+                        <h3 id="question-text" class="text-xl sm:text-2xl font-bold text-gray-800 leading-tight">Question</h3>
+                        <p id="question-hint" class="text-gray-500 mt-3 text-sm hidden">Hint</p>
+                    </div>
+
+                    <div id="options-container" class="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4 w-full">
+                        <!-- 選択肢ボタンが生成されます -->
+                    </div>
+
+                    <!-- タイピング入力エリア -->
+                    <div id="typing-container" class="hidden w-full flex-col items-center space-y-6">
+                        <p class="text-sm text-gray-500 bg-gray-100 px-4 py-1 rounded-full"><i class="fas fa-keyboard mr-1"></i> 下線をタップして入力開始</p>
+                        
+                        <!-- 直接入力風UI -->
+                        <div id="typing-display" class="flex flex-wrap justify-center items-end gap-x-4 gap-y-4 cursor-text bg-white p-6 rounded-xl border-2 border-dashed border-gray-300 w-full hover:bg-gray-50 transition-colors min-h-[100px]" onclick="document.getElementById('hidden-typing-input').focus()">
+                            <!-- JSで文字枠が生成されます -->
+                        </div>
+                        
+                        <!-- 隠しインプット (スマホキーボード呼び出し用) -->
+                        <input type="text" id="hidden-typing-input" class="opacity-0 absolute -z-10" autocomplete="off" spellcheck="false" autocorrect="off" autocapitalize="none" oninput="handleTypingInput()">
+                    </div>
+
+                    <div id="feedback-message" class="mt-6 text-xl font-bold h-8 transition-all flex items-center justify-center w-full"></div>
+                    
+                    <!-- カウントダウンメッセージ -->
+                    <div id="auto-next-msg" class="text-gray-400 font-bold mt-2 h-6 text-sm hidden text-center"></div>
+
+                    <div class="flex gap-4 mt-4 w-full sm:w-auto">
+                        <button id="next-btn" onclick="nextQuestion()" class="flex-1 sm:flex-none px-8 py-3 bg-gray-800 text-white rounded-full shadow hidden hover:bg-gray-700 transition-colors font-bold">
+                            次の問題へ <i class="fas fa-arrow-right ml-2"></i>
+                        </button>
+                        <button id="finish-btn" onclick="showResults()" class="flex-1 sm:flex-none px-8 py-3 bg-indigo-600 text-white rounded-full shadow hidden hover:bg-indigo-700 transition-colors font-bold">
+                            結果を見る <i class="fas fa-flag-checkered ml-2"></i>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- クイズ結果画面 -->
+                <div id="quiz-result" class="hidden py-8">
+                    <h2 id="result-title" class="text-2xl sm:text-3xl font-bold mb-4 text-gray-800">クイズ完了！</h2>
+                    <div class="text-6xl mb-6 animate-bounce" id="result-emoji">🏆</div>
+                    
+                    <div class="flex flex-col sm:flex-row justify-center gap-4 mb-8">
+                        <div class="bg-orange-50 px-12 py-6 rounded-2xl w-full sm:max-w-md shadow-sm mx-auto">
+                            <p class="text-lg text-gray-600 mb-2">平均解答タイム</p>
+                            <p class="text-4xl font-bold"><span id="average-time" class="text-orange-500 text-5xl">0.0</span> <span class="text-2xl text-orange-400">秒</span></p>
+                        </div>
+                    </div>
+
+                    <div>
+                        <button onclick="resetQuiz()" class="px-8 py-3 bg-indigo-500 text-white rounded-full font-bold shadow hover:bg-indigo-600 transition-colors">
+                            <i class="fas fa-redo mr-2"></i> もう一度プレイ
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 🔥 疑問詞特訓ビュー (落ちものゲーム) -->
+            <div id="view-wh" class="hidden fade-in relative">
+                
+                <!-- 特訓セットアップ画面 -->
+                <div id="wh-setup" class="text-center py-8">
+                    <h2 class="text-2xl sm:text-3xl font-black text-indigo-900 mb-4 tracking-tight"><i class="fas fa-meteor text-orange-500 mr-2"></i>疑問詞スピード仕分け！</h2>
+                    <p class="text-gray-600 mb-6 max-w-md mx-auto text-sm sm:text-base leading-relaxed">
+                        上から降ってくる日本語に合わせて、正しい疑問詞ボタンをタップしよう！<br>
+                        間違えるとスコアが減り、<span class="text-red-500 font-bold">スコアが0点になるとゲームオーバー</span>になるぞ！<br>
+                        さらに<span class="text-red-500 font-bold">連続でお手つきするとボタンが一時ロック</span>されるので注意！
+                    </p>
+                    
+                    <h3 class="font-bold text-gray-700 mb-4">レベル（速さ）を選んでスタート！</h3>
+                    <div class="flex flex-col sm:flex-row justify-center gap-4 px-4">
+                        <button onclick="startWhGame(1)" class="px-6 py-4 bg-green-500 hover:bg-green-600 text-white font-bold rounded-xl shadow-md transition-transform hover:scale-105 active:scale-95 text-lg w-full sm:w-auto">
+                            Lv.1 <span class="block text-xs mt-1 font-normal">おそい</span>
+                        </button>
+                        <button onclick="startWhGame(2)" class="px-6 py-4 bg-orange-500 hover:bg-orange-600 text-white font-bold rounded-xl shadow-md transition-transform hover:scale-105 active:scale-95 text-lg w-full sm:w-auto">
+                            Lv.2 <span class="block text-xs mt-1 font-normal">ふつう</span>
+                        </button>
+                        <button onclick="startWhGame(3)" class="px-6 py-4 bg-red-500 hover:bg-red-600 text-white font-bold rounded-xl shadow-md transition-transform hover:scale-105 active:scale-95 text-lg w-full sm:w-auto">
+                            Lv.3 <span class="block text-xs mt-1 font-normal">はやい</span>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- 特訓プレイ画面 -->
+                <div id="wh-play" class="hidden flex-col items-center">
+                    <div class="w-full relative overflow-hidden bg-slate-800 rounded-2xl shadow-inner flex flex-col h-[480px] sm:h-[550px] border-4 border-slate-700 transition-colors">
+                        
+                        <!-- ヘッダー -->
+                        <div class="flex justify-between items-center p-3 bg-slate-900/80 backdrop-blur-sm z-20 w-full text-white shadow-md">
+                            <div class="font-bold text-orange-400">Lv: <span id="wh-level" class="text-xl">1</span></div>
+                            <div class="font-black text-xl tracking-wider">SCORE: <span id="wh-score">20</span></div>
+                            <div class="text-lg tracking-widest" id="wh-life">❤️❤️❤️</div>
+                        </div>
+                        
+                        <!-- 落下エリア -->
+                        <div id="wh-falling-area" class="flex-1 relative w-full z-10">
+                            <!-- JSでカードが生成されます -->
+                        </div>
+
+                        <!-- 仕分けボタン群 (連打ロック時に pointer-events-none になる) -->
+                        <div id="wh-buttons-container" class="grid grid-cols-3 gap-2 sm:gap-3 p-3 sm:p-4 bg-slate-900/95 backdrop-blur-md relative z-20 w-full border-t-2 border-slate-700 transition-opacity duration-200">
+                            <button onclick="whCheck('What', this)" class="wh-btn bg-blue-600 hover:bg-blue-500 text-white font-black py-4 rounded-xl shadow-[0_4px_0_rgb(30,58,138)] active:shadow-none active:translate-y-1 transition-all text-lg sm:text-xl">What</button>
+                            <button onclick="whCheck('How', this)" class="wh-btn bg-green-600 hover:bg-green-500 text-white font-black py-4 rounded-xl shadow-[0_4px_0_rgb(20,83,45)] active:shadow-none active:translate-y-1 transition-all text-lg sm:text-xl">How</button>
+                            <button onclick="whCheck('Where', this)" class="wh-btn bg-red-600 hover:bg-red-500 text-white font-black py-4 rounded-xl shadow-[0_4px_0_rgb(153,27,27)] active:shadow-none active:translate-y-1 transition-all text-lg sm:text-xl">Where</button>
+                            <button onclick="whCheck('When', this)" class="wh-btn bg-yellow-500 hover:bg-yellow-400 text-white font-black py-4 rounded-xl shadow-[0_4px_0_rgb(161,98,7)] active:shadow-none active:translate-y-1 transition-all text-lg sm:text-xl">When</button>
+                            <button onclick="whCheck('Who', this)" class="wh-btn bg-purple-600 hover:bg-purple-500 text-white font-black py-4 rounded-xl shadow-[0_4px_0_rgb(88,28,135)] active:shadow-none active:translate-y-1 transition-all text-lg sm:text-xl">Who</button>
+                            <button onclick="whCheck('Why', this)" class="wh-btn bg-pink-600 hover:bg-pink-500 text-white font-black py-4 rounded-xl shadow-[0_4px_0_rgb(157,23,77)] active:shadow-none active:translate-y-1 transition-all text-lg sm:text-xl">Why</button>
+                        </div>
+                        
+                        <!-- 終了ボタン -->
+                        <button onclick="endWhGame(true); switchTab('list');" class="absolute top-14 right-2 p-2 bg-white/10 hover:bg-white/20 text-white rounded-full z-30 shadow transition-colors w-10 h-10 flex items-center justify-center" title="やめる">
+                            <i class="fas fa-times"></i>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- 特訓結果画面 -->
+                <div id="wh-result" class="hidden py-8 text-center">
+                    <h2 class="text-3xl sm:text-4xl font-black mb-4 text-red-600 tracking-wider">GAME OVER</h2>
+                    <div class="text-6xl mb-6">💥</div>
+                    
+                    <div class="bg-slate-100 px-12 py-6 rounded-2xl w-full sm:max-w-md shadow-inner mx-auto mb-8 border border-slate-200">
+                        <p class="text-lg text-slate-500 font-bold mb-2">最終スコア</p>
+                        <p class="text-5xl font-black text-slate-800"><span id="wh-final-score">0</span> <span class="text-2xl text-slate-500">pts</span></p>
+                        <p class="text-sm font-bold text-orange-500 mt-3 bg-orange-100 py-1 rounded">到達レベル: <span id="wh-final-level" class="text-lg">1</span></p>
+                    </div>
+
+                    <div class="flex flex-col sm:flex-row justify-center gap-4">
+                        <button onclick="resetWhGame()" class="px-8 py-3 bg-orange-500 text-white rounded-full font-bold shadow-lg hover:bg-orange-600 transition-colors">
+                            <i class="fas fa-redo mr-2"></i> もう一度挑戦（レベル選択へ）
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 管理ビュー (教師用疑似エディタ) -->
+            <div id="view-admin" class="hidden fade-in">
+                <div class="bg-indigo-50 border border-indigo-200 rounded-xl p-5 sm:p-6 mb-8 text-center shadow-inner relative overflow-hidden">
+                    <div class="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-indigo-500 to-purple-500"></div>
+                    <h2 class="text-xl font-bold text-indigo-900 mb-2"><i class="fas fa-magic mr-2"></i>アプリに問題を反映する</h2>
+                    <p class="text-sm text-gray-700 mb-4 text-left bg-white p-4 rounded-lg shadow-sm">
+                        1. 下のフォームで問題を追加・削除します。<br>
+                        2. 完了したら、このボタンを押して最新のコードをコピーします。<br>
+                        3. Googleサイトの編集画面で、「埋め込みコード」欄にコピーしたコードをすべて上書きして保存してください。
+                    </p>
+                    <button onclick="exportCode()" class="w-full sm:w-auto px-8 py-3 bg-indigo-600 hover:bg-indigo-700 text-white font-bold rounded-full shadow-md transition-transform hover:scale-105 active:scale-95">
+                        <i class="fas fa-copy mr-2"></i> 最新のコードをコピーする
+                    </button>
+                </div>
+
+                <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                    <!-- 新規追加フォーム -->
+                    <div class="bg-white p-5 border border-gray-200 rounded-xl shadow-sm h-fit">
+                        <h3 class="font-bold text-gray-800 border-b pb-2 mb-4 text-sm"><i class="fas fa-plus-circle text-teal-500 mr-1"></i> 新しいフレーズを追加</h3>
+                        <div class="space-y-4">
+                            <div>
+                                <label class="block text-xs font-bold text-gray-600 mb-1">英語フレーズ <span class="text-red-500">*</span></label>
+                                <input type="text" id="add-en" class="w-full p-2 border border-gray-300 rounded focus:ring-2 focus:ring-teal-300 outline-none text-sm" placeholder="例: Thank you for waiting.">
+                            </div>
+                            <div>
+                                <label class="block text-xs font-bold text-gray-600 mb-1">日本語の意味 <span class="text-red-500">*</span></label>
+                                <input type="text" id="add-ja" class="w-full p-2 border border-gray-300 rounded focus:ring-2 focus:ring-teal-300 outline-none text-sm" placeholder="例: お待たせいたしました。">
+                            </div>
+                            <div>
+                                <label class="block text-xs font-bold text-gray-600 mb-1">読み方 (任意)</label>
+                                <input type="text" id="add-reading" class="w-full p-2 border border-gray-300 rounded focus:ring-2 focus:ring-teal-300 outline-none text-sm" placeholder="例: サンキュー フォー ウェイティング">
+                            </div>
+                            <button onclick="addPhrase()" class="w-full py-2 bg-teal-500 hover:bg-teal-600 text-white font-bold rounded shadow transition-colors mt-2">
+                                リストに追加する
+                            </button>
+                            <p id="add-msg" class="text-sm font-bold text-center h-5"></p>
+                        </div>
+                    </div>
+
+                    <!-- 登録済みリスト -->
+                    <div class="bg-white p-5 border border-gray-200 rounded-xl shadow-sm">
+                        <h3 class="font-bold text-gray-800 border-b pb-2 mb-4 text-sm"><i class="fas fa-list text-indigo-500 mr-1"></i> 登録済みデータ一覧</h3>
+                        <div id="admin-list-container" class="space-y-2 max-h-[350px] overflow-y-auto pr-2">
+                            <!-- JSで生成されます -->
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+        </main>
+    </div>
+
+    <!-- 💡 アプリのデータと動作ロジック -->
+    <script>
+        // ==========================================
+        // 📚 疑問詞特訓用 データ (固定30問)
+        // ==========================================
+        const whData = [
+            { "ja": "お名前は何ですか？", "en": "[ ? ] is your name?", "ans": "What" },
+            { "ja": "どこに住んでるの？", "en": "[ ? ] do you live?", "ans": "Where" },
+            { "ja": "どうやってここに来たの？", "en": "[ ? ] did you come here?", "ans": "How" },
+            { "ja": "誕生日はいつですか？", "en": "[ ? ] is your birthday?", "ans": "When" },
+            { "ja": "あの人は誰？", "en": "[ ? ] is that person?", "ans": "Who" },
+            { "ja": "なぜ泣いているの？", "en": "[ ? ] are you crying?", "ans": "Why" },
+            { "ja": "今日はどうされますか？", "en": "[ ? ] would you like it today?", "ans": "How" },
+            { "ja": "休みの日は何をしてるんですか？", "en": "[ ? ] do you do on your days off?", "ans": "What" },
+            { "ja": "これはいくらですか？", "en": "[ ? ] much is this?", "ans": "How" },
+            { "ja": "トイレはどこですか？", "en": "[ ? ] is the restroom?", "ans": "Where" },
+            { "ja": "お仕事は何をしていますか？", "en": "[ ? ] do you do for a living?", "ans": "What" },
+            { "ja": "なぜ英語を勉強しているの？", "en": "[ ? ] are you studying English?", "ans": "Why" },
+            { "ja": "いつ日本に来ましたか？", "en": "[ ? ] did you come to Japan?", "ans": "When" },
+            { "ja": "あなたの好きな歌手は誰？", "en": "[ ? ] is your favorite singer?", "ans": "Who" },
+            { "ja": "駅はどこですか？", "en": "[ ? ] is the station?", "ans": "Where" },
+            
+            // 追加15問
+            { "ja": "いつも何時に起きますか？", "en": "[ ? ] time do you usually get up?", "ans": "What" },
+            { "ja": "どちら様ですか？", "en": "[ ? ] is calling, please?", "ans": "Who" },
+            { "ja": "どうやってその汚れを落としましたか？", "en": "[ ? ] did you remove that stain?", "ans": "How" },
+            { "ja": "あなたのバッグはどれですか？", "en": "[ ? ] is your bag? (※What/How/Which代用で今回はWhat)", "ans": "What" },
+            { "ja": "なぜ昨日は休んだのですか？", "en": "[ ? ] were you absent yesterday?", "ans": "Why" },
+            { "ja": "美容室にはどのくらいの頻度で来ますか？", "en": "[ ? ] often do you visit the hair salon?", "ans": "How" },
+            { "ja": "受付はどこにありますか？", "en": "[ ? ] is the reception desk?", "ans": "Where" },
+            { "ja": "最後に髪を切ったのはいつですか？", "en": "[ ? ] was the last time you cut your hair?", "ans": "When" },
+            { "ja": "本日の担当スタイリストは誰ですか？", "en": "[ ? ] is your hair stylist today?", "ans": "Who" },
+            { "ja": "お湯の温度はいかがですか？", "en": "[ ? ] is the water temperature?", "ans": "How" },
+            { "ja": "お探しのヘアケア商品は何ですか？", "en": "[ ? ] hair care product are you looking for?", "ans": "What" },
+            { "ja": "お支払いはどのようになさいますか？", "en": "[ ? ] would you like to pay?", "ans": "How" },
+            { "ja": "荷物はどこに置けばいいですか？", "en": "[ ? ] should I put my luggage?", "ans": "Where" },
+            { "ja": "なぜ髪を染めたいのですか？", "en": "[ ? ] do you want to dye your hair?", "ans": "Why" },
+            { "ja": "予約の確認が取れるのはいつですか？", "en": "[ ? ] can we confirm the reservation?", "ans": "When" }
+        ];
+
+        // ==========================================
+        // 📚 学習データ (動的更新用)
+        // ==========================================
+        // --- DATA_START ---
+        let phraseData = [
+            {
+                "id": 1,
+                "english": "Hi. May I help you?",
+                "reading": "ハイ. メイ アイ ヘルプ ユー？",
+                "meaning": "いらっしゃいませ！",
+                "dialogues": [
+                    {
+                        "speaker": "美容師",
+                        "en": "Hi! May I help you?",
+                        "ja": "こんにちは！いらっしゃいませ。（ご予約の方ですか？）"
+                    },
+                    {
+                        "speaker": "お客様",
+                        "en": "Hi. I have a reservation at 2:00. My name is Kimura.",
+                        "reading": "ハイ。アイ ハヴ ア レザヴェイション アッ トゥー。マイ ネイム イズ キムラ",
+                        "ja": "こんにちは。2時に予約している木村です。"
+                    },
+                    {
+                        "speaker": "美容師",
+                        "en": "Yes, Mr. Kimura. This way, please.",
+                        "reading": "イエス、ミスター キムラ。ディス ウェイ プリーズ",
+                        "ja": "はい、木村様ですね。こちらへどうぞ。"
+                    }
+                ]
+            },
+            {
+                "id": 2,
+                "english": "How would you like it today?",
+                "reading": "ハウ ウッジュ― ライキットゥデイ？",
+                "meaning": "今日はどうされますか？",
+                "dialogues": [
+                    {
+                        "speaker": "美容師",
+                        "en": "Please have a seat.",
+                        "reading": "プリーズ ハヴ ア スィート",
+                        "ja": "座ってください。"
+                    },
+                    {
+                        "speaker": "お客様",
+                        "en": "Thank you.",
+                        "ja": "ありがとうございます。"
+                    },
+                    {
+                        "speaker": "美容師",
+                        "en": "How would you like it today?",
+                        "reading": "ハウ ウッジュ― ライキッ トゥデイ？",
+                        "ja": "今日はどうされますか？"
+                    }
+                ]
+            },
+            {
+                "id": 3,
+                "english": "How have you been?",
+                "reading": "ハウ ハヴュー ビーン？",
+                "meaning": "最近どうでしたか？",
+                "dialogues": [
+                    {
+                        "speaker": "美容師",
+                        "en": "How have you been?",
+                        "ja": "最近どうでしたか？"
+                    },
+                    {
+                        "speaker": "お客様",
+                        "en": "I've been good, thank you. A bit busy with work, though.",
+                        "ja": "調子いいよ。でも、ちょっと仕事が忙しかったかな。"
+                    },
+                    {
+                        "speaker": "美容師",
+                        "en": "I see. Thanks for coming today.",
+                        "reading": "アイ スィー。 サンクス フォー カミング トゥデイ",
+                        "ja": "そうなんだ。今日は来てくれてありがとう。"
+                    }
+                ]
+            },
+            {
+                "id": 4,
+                "english": "What do you do on your days off?",
+                "reading": "ワット ドゥー ユー ドゥー オン ユア デイズ オフ？",
+                "meaning": "休みの日は何をしてるんですか？",
+                "dialogues": [
+                    {
+                        "speaker": "美容師",
+                        "en": "What do you do on your days off?",
+                        "ja": "休みの日は何をしてるんですか？"
+                    },
+                    {
+                        "speaker": "お客様",
+                        "en": "I like watching Netflix.",
+                        "reading": "アイ ライク ウォッチング ネットフリックス",
+                        "ja": "ネットフリックスを見るのが好きですね。"
+                    },
+                    {
+                        "speaker": "美容師",
+                        "en": "Oh, me too! What are you watching?",
+                        "reading": "オー、ミー トゥー！ワット アー ユー ウォッチング？",
+                        "ja": "あ、私もです！何を見ているんですか？"
+                    }
+                ]
+            },
+            {
+                "id": 5,
+                "english": "How did you hear about us?",
+                "reading": "ハウ ディッド ユー ヒア アバウト アス？",
+                "meaning": "どうやってうちのお店を知ったんですか？",
+                "dialogues": [
+                    {
+                        "speaker": "美容師",
+                        "en": "How did you hear about us?",
+                        "ja": "どうやってうちのお店を知ったんですか？"
+                    },
+                    {
+                        "speaker": "お客様",
+                        "en": "My friend Ken recommended you.",
+                        "reading": "マイ フレンド ケン レコメンディッド ユー",
+                        "ja": "友達のケンが勧めてくれて。"
+                    },
+                    {
+                        "speaker": "美容師",
+                        "en": "Oh, you know Ken! He's a great guy.",
+                        "reading": "オー、ユー ノウ ケン！ヒーズ ア グレイト ガイ",
+                        "ja": "あ、ケンさんをご存知なんですね！彼、すごく良い人ですよね。"
+                    }
+                ]
+            }
+        ];
+        // --- DATA_END ---
+
+        // データの初期読み込み
+        function loadData() {
+            renderPhraseList();
+            renderAdminList();
+        }
+
+        // ==========================================
+        // 🔧 管理（疑似エディタ）機能
+        // ==========================================
+        function renderAdminList() {
+            const container = document.getElementById('admin-list-container');
+            if (!container) return;
+            container.innerHTML = '';
+            
+            [...phraseData].reverse().forEach(item => {
+                const div = document.createElement('div');
+                div.className = 'flex justify-between items-center p-3 bg-gray-50 border border-gray-200 rounded-lg hover:bg-gray-100 transition-colors';
+                div.innerHTML = `
+                    <div class="pr-2 truncate">
+                        <div class="font-bold text-sm text-gray-800 truncate" title="${item.english}">${item.english}</div>
+                        <div class="text-xs text-gray-500 truncate" title="${item.meaning}">${item.meaning}</div>
+                    </div>
+                    <button onclick="deletePhrase(${item.id})" class="text-red-400 hover:text-red-600 hover:bg-red-50 p-2 rounded transition-colors flex-shrink-0" title="削除">
+                        <i class="fas fa-trash-alt"></i>
+                    </button>
+                `;
+                container.appendChild(div);
+            });
+        }
+
+        function addPhrase() {
+            const en = document.getElementById('add-en').value.trim();
+            const ja = document.getElementById('add-ja').value.trim();
+            const read = document.getElementById('add-reading').value.trim();
+            const msg = document.getElementById('add-msg');
+
+            if (!en || !ja) {
+                msg.textContent = '英語と意味を入力してください。';
+                msg.className = 'text-sm font-bold text-center h-5 text-red-500 mt-2';
+                return;
+            }
+
+            const newId = phraseData.length > 0 ? Math.max(...phraseData.map(p => p.id)) + 1 : 1;
+            phraseData.push({
+                id: newId,
+                english: en,
+                meaning: ja,
+                reading: read,
+                dialogues: []
+            });
+
+            document.getElementById('add-en').value = '';
+            document.getElementById('add-ja').value = '';
+            document.getElementById('add-reading').value = '';
+            
+            msg.textContent = 'リストに追加しました！';
+            msg.className = 'text-sm font-bold text-center h-5 text-green-500 mt-2';
+            setTimeout(() => { msg.textContent = ''; }, 3000);
+
+            renderPhraseList();
+            renderAdminList();
+        }
+
+        function deletePhrase(id) {
+            if(confirm('このフレーズを削除しますか？')) {
+                phraseData = phraseData.filter(p => p.id !== id);
+                renderPhraseList();
+                renderAdminList();
+            }
+        }
+
+        function exportCode() {
+            const clone = document.documentElement.cloneNode(true);
+
+            const baseClass = "px-4 py-2 sm:px-5 sm:py-2.5 rounded-full text-sm font-semibold transition-all duration-200 border ";
+            
+            clone.querySelector('#tab-list').className = baseClass + "bg-indigo-600 text-white shadow-md border-indigo-600";
+            clone.querySelector('#tab-quiz').className = baseClass + "bg-white text-indigo-600 hover:bg-indigo-50 shadow-sm border-transparent";
+            clone.querySelector('#tab-wh').className = baseClass + "bg-white text-orange-500 hover:bg-orange-50 shadow-sm border-orange-100";
+            clone.querySelector('#tab-admin').className = baseClass + "bg-gray-100 text-gray-600 hover:bg-gray-200 shadow-sm border-transparent";
+            
+            clone.querySelector('#view-list').classList.remove('hidden');
+            clone.querySelector('#view-quiz').classList.add('hidden');
+            clone.querySelector('#view-wh').classList.add('hidden');
+            clone.querySelector('#view-admin').classList.add('hidden');
+            
+            clone.querySelector('#quiz-setup').classList.remove('hidden');
+            clone.querySelector('#quiz-play').classList.add('hidden');
+            clone.querySelector('#quiz-play').classList.remove('flex');
+            clone.querySelector('#quiz-result').classList.add('hidden');
+            clone.querySelector('#quiz-timer').textContent = '0.0秒';
+            clone.querySelector('#auto-next-msg').classList.add('hidden');
+            clone.querySelector('#auto-next-msg').textContent = '';
+            clone.querySelector('#average-time').textContent = '0.0';
+            clone.querySelector('#battle-ui').classList.add('hidden');
+            clone.querySelector('#battle-ui').classList.remove('flex');
+            clone.querySelector('#main-panel').classList.remove('damage-player');
+
+            clone.querySelector('#wh-setup').classList.remove('hidden');
+            clone.querySelector('#wh-play').classList.add('hidden');
+            clone.querySelector('#wh-play').classList.remove('flex');
+            clone.querySelector('#wh-result').classList.add('hidden');
+            clone.querySelector('#wh-falling-area').innerHTML = '';
+
+            const enemyChar = clone.querySelector('#enemy-char');
+            if(enemyChar) enemyChar.style = '';
+
+            clone.querySelector('#phrase-list-container').innerHTML = '';
+            clone.querySelector('#options-container').innerHTML = '';
+            clone.querySelector('#typing-display').innerHTML = '';
+            clone.querySelector('#admin-list-container').innerHTML = '';
+
+            const hiddenInput = clone.querySelector('#hidden-typing-input');
+            if (hiddenInput) hiddenInput.removeAttribute('value');
+            clone.querySelector('#add-en').removeAttribute('value');
+            clone.querySelector('#add-ja').removeAttribute('value');
+            clone.querySelector('#add-reading').removeAttribute('value');
+            clone.querySelector('#add-msg').textContent = '';
+
+            const scripts = clone.querySelectorAll('script');
+            scripts.forEach(script => {
+                if (script.textContent.includes('// --- DATA_START ---')) {
+                    const newJsonStr = JSON.stringify(phraseData, null, 4);
+                    const regex = /\/\/ --- DATA_START ---[\s\S]*?\/\/ --- DATA_END ---/;
+                    script.textContent = script.textContent.replace(regex, `// --- DATA_START ---\n        let phraseData = ${newJsonStr};\n        // --- DATA_END ---`);
+                }
+            });
+
+            const finalHtml = "<!DOCTYPE html>\n<html lang=\"ja\">\n" + clone.innerHTML + "\n</html>";
+
+            const textarea = document.createElement('textarea');
+            textarea.value = finalHtml;
+            textarea.style.position = 'fixed';
+            textarea.style.top = '-9999px';
+            document.body.appendChild(textarea);
+            textarea.select();
+            
+            try {
+                document.execCommand('copy');
+                alert("✨ 新しいコードをコピーしました！ ✨\n\nGoogleサイトの編集画面を開き、\n現在の「埋め込みコード」をすべて消して、\nコピーしたコードを貼り付けて保存してください。");
+            } catch (err) {
+                alert("コピーに失敗しました。お手数ですが、別のブラウザでお試しください。");
+            } finally {
+                document.body.removeChild(textarea);
+            }
+        }
+
+
+        // ==========================================
+        // 🎨 UI描画処理
+        // ==========================================
+        function renderPhraseList() {
+            const container = document.getElementById('phrase-list-container');
+            container.innerHTML = '';
+
+            phraseData.forEach(item => {
+                const card = document.createElement('div');
+                card.className = 'bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden transition-all hover:shadow-md';
+                
+                let dialoguesHTML = '';
+                if(item.dialogues && item.dialogues.length > 0) {
+                    item.dialogues.forEach(d => {
+                        const isStylist = d.speaker === "美容師";
+                        const bubbleColor = isStylist ? 'bg-indigo-50 border-indigo-100' : 'bg-teal-50 border-teal-100';
+                        const alignment = isStylist ? 'pr-6 sm:pr-12' : 'pl-6 sm:pl-12';
+                        const icon = isStylist ? '<i class="fas fa-cut text-indigo-400"></i>' : '<i class="fas fa-user text-teal-400"></i>';
+                        
+                        dialoguesHTML += `
+                            <div class="mb-3 ${alignment}">
+                                <div class="text-xs text-gray-500 mb-1 flex items-center ${isStylist ? '' : 'justify-end'} gap-1 font-bold">
+                                    ${isStylist ? icon + ' ' + d.speaker : d.speaker + ' ' + icon}
+                                </div>
+                                <div class="p-3 rounded-xl border ${bubbleColor} inline-block w-full shadow-sm">
+                                    <p class="font-bold text-gray-800 text-sm sm:text-base">${d.en}</p>
+                                    ${d.reading ? `<p class="text-xs text-gray-500 mt-1">${d.reading}</p>` : ''}
+                                    <p class="text-sm text-gray-700 mt-2 border-t border-gray-200/50 pt-2">${d.ja}</p>
+                                </div>
+                            </div>
+                        `;
+                    });
+                } else {
+                    dialoguesHTML = '<p class="text-sm text-gray-500 text-center py-4 bg-gray-50 rounded-lg">会話例は登録されていません。</p>';
+                }
+
+                card.innerHTML = `
+                    <div class="p-4 sm:p-5">
+                        <div class="flex flex-col sm:flex-row sm:items-start justify-between gap-2">
+                            <div>
+                                <h3 class="text-lg sm:text-xl font-bold text-indigo-700">${item.english}</h3>
+                                ${item.reading ? `<p class="text-xs sm:text-sm text-gray-500 mt-1"><i class="fas fa-volume-up opacity-50 mr-1"></i>${item.reading}</p>` : ''}
+                            </div>
+                            <div class="self-start bg-indigo-100 text-indigo-800 px-3 py-1.5 rounded-lg text-sm font-bold shadow-sm">
+                                ${item.meaning}
+                            </div>
+                        </div>
+                    </div>
+                    <details class="group border-t border-gray-100">
+                        <summary class="cursor-pointer p-3 bg-gray-50 hover:bg-gray-100 text-sm font-bold text-gray-500 flex justify-center items-center transition-colors">
+                            <span>会話例を見る</span>
+                            <i class="fas fa-chevron-down ml-2 transition-transform group-open:rotate-180"></i>
+                        </summary>
+                        <div class="p-4 sm:p-5 bg-white border-t border-gray-50">
+                            ${dialoguesHTML}
+                        </div>
+                    </details>
+                `;
+                container.appendChild(card);
+            });
+        }
+
+        // ==========================================
+        // 🎮 クイズ機能のロジック
+        // ==========================================
+        let quizQuestions = [];
+        let currentQuestionIndex = 0;
+        let quizMode = 'en2ja'; 
+        
+        let timerInterval;
+        let questionStartTime = 0;
+        let hasMadeMistake = false; 
+        let timeRecords = []; 
+        let autoNextInterval = null;
+
+        let currentMistakeCount = 0;
+        let currentMistakeIndex = 0;
+
+        const PLAYER_MAX_HP = 100;
+        let playerCurrentHP = 100;
+        let enemyMaxHP = 10;
+        let enemyCurrentHP = 10;
+        let lastValidCount = 0;
+        
+        const enemyEmojis = ['👹', '👺', '👽', '👾', '🤖', '🧟', '🧛', '🐲'];
+
+        function shuffleArray(array) {
+            const newArr = [...array];
+            for (let i = newArr.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [newArr[i], newArr[j]] = [newArr[j], newArr[i]];
+            }
+            return newArr;
+        }
+        
+        function startTimer() {
+            clearInterval(timerInterval);
+            const timerDisplay = document.getElementById('quiz-timer');
+            timerDisplay.textContent = '0.0秒';
+            questionStartTime = Date.now();
+            
+            timerInterval = setInterval(() => {
+                const current = ((Date.now() - questionStartTime) / 1000).toFixed(1);
+                timerDisplay.textContent = current + '秒';
+            }, 100);
+        }
+
+        function stopTimer() {
+            clearInterval(timerInterval);
+            return ((Date.now() - questionStartTime) / 1000).toFixed(1);
+        }
+
+        function startAutoNext(isLastQuestion) {
+            clearAutoNext(); 
+            
+            let countdown = 3; 
+            const msgElem = document.getElementById('auto-next-msg');
+            msgElem.classList.remove('hidden');
+            
+            const updateMsg = () => {
+                msgElem.innerHTML = `<i class="fas fa-spinner fa-spin mr-1"></i> ${isLastQuestion ? '結果発表' : '次の問題'}まで ${countdown}秒...<br><span class="text-xs font-normal">※Enterキーですぐに進めます</span>`;
+            };
+            updateMsg();
+
+            autoNextInterval = setInterval(() => {
+                countdown--;
+                if (countdown > 0) {
+                    updateMsg();
+                } else {
+                    clearAutoNext();
+                    if (isLastQuestion) {
+                        showResults();
+                    } else {
+                        nextQuestion();
+                    }
+                }
+            }, 1000);
+        }
+
+        function clearAutoNext() {
+            if (autoNextInterval) {
+                clearInterval(autoNextInterval);
+                autoNextInterval = null;
+            }
+            document.getElementById('auto-next-msg').classList.add('hidden');
+        }
+
+        function updateHPBar(target, current, max) {
+            const percentage = Math.max(0, (current / max) * 100);
+            const bar = document.getElementById(`${target}-hp-bar`);
+            bar.style.width = `${percentage}%`;
+            
+            if (target === 'player') {
+                if (percentage <= 30) {
+                    bar.className = 'bg-gradient-to-r from-red-500 to-red-700 h-full transition-all duration-300 w-full';
+                } else {
+                    bar.className = 'bg-gradient-to-r from-blue-400 to-blue-600 h-full transition-all duration-300 w-full';
+                }
+            }
+        }
+
+        function triggerAnim(elementId, animClass) {
+            const el = document.getElementById(elementId);
+            if(!el) return;
+            el.classList.remove(animClass);
+            void el.offsetWidth; 
+            el.classList.add(animClass);
+        }
+
+        function showHitEffect(emoji) {
+            const effect = document.getElementById('hit-effect');
+            effect.textContent = emoji;
+            effect.classList.remove('hidden', 'anim-hit');
+            void effect.offsetWidth;
+            effect.classList.add('anim-hit');
+        }
+
+        function startQuiz(mode) {
+            quizMode = mode;
+            currentQuestionIndex = 0;
+            timeRecords = []; 
+            clearAutoNext();
+            
+            if (quizMode === 'typing') {
+                playerCurrentHP = PLAYER_MAX_HP;
+                updateHPBar('player', playerCurrentHP, PLAYER_MAX_HP);
+                document.getElementById('battle-ui').classList.remove('hidden');
+                document.getElementById('battle-ui').classList.add('flex');
+                document.getElementById('main-panel').classList.remove('damage-player');
+            } else {
+                document.getElementById('battle-ui').classList.add('hidden');
+                document.getElementById('battle-ui').classList.remove('flex');
+            }
+            
+            quizQuestions = shuffleArray(phraseData);
+
+            document.getElementById('quiz-setup').classList.add('hidden');
+            document.getElementById('quiz-play').classList.remove('hidden');
+            document.getElementById('quiz-play').classList.add('flex');
+            
+            loadQuestion();
+        }
+
+        function loadQuestion() {
+            clearAutoNext(); 
+            
+            const questionData = quizQuestions[currentQuestionIndex];
+            const qTextElem = document.getElementById('question-text');
+            const qHintElem = document.getElementById('question-hint');
+            const optionsContainer = document.getElementById('options-container');
+            const typingContainer = document.getElementById('typing-container');
+            const feedbackMsg = document.getElementById('feedback-message');
+            
+            feedbackMsg.textContent = '';
+            document.getElementById('next-btn').classList.add('hidden');
+            document.getElementById('finish-btn').classList.add('hidden');
+            optionsContainer.innerHTML = '';
+            hasMadeMistake = false; 
+            currentMistakeCount = 0; 
+            currentMistakeIndex = 0;
+            lastValidCount = 0;
+            
+            document.getElementById('quiz-progress').textContent = `問題: ${currentQuestionIndex + 1} / ${quizQuestions.length}`;
+
+            if (quizMode === 'typing') {
+                optionsContainer.classList.add('hidden');
+                typingContainer.classList.remove('hidden');
+                typingContainer.classList.add('flex');
+                
+                qTextElem.textContent = questionData.meaning;
+                qHintElem.classList.add('hidden');
+                
+                document.getElementById('enemy-name').textContent = `ENEMY ${currentQuestionIndex + 1}`;
+                const enemyChar = document.getElementById('enemy-char');
+                enemyChar.style.transition = 'none';
+                enemyChar.style.transform = 'scaleX(-1) translate(0, 0) rotate(0deg)';
+                enemyChar.style.opacity = '1';
+                enemyChar.textContent = enemyEmojis[currentQuestionIndex % enemyEmojis.length];
+                
+                const targetLength = setupTypingUI(questionData.english);
+                
+                enemyMaxHP = targetLength;
+                enemyCurrentHP = enemyMaxHP;
+                updateHPBar('enemy', enemyCurrentHP, enemyMaxHP);
+                
+                startTimer();
+
+            } else {
+                optionsContainer.classList.remove('hidden');
+                typingContainer.classList.add('hidden');
+                typingContainer.classList.remove('flex');
+
+                let correctAnswer, questionText;
+
+                if (quizMode === 'en2ja') {
+                    questionText = questionData.english;
+                    qHintElem.textContent = questionData.reading || '読み方なし';
+                    if(!questionData.reading) qHintElem.classList.add('hidden');
+                    else qHintElem.classList.remove('hidden');
+                    correctAnswer = questionData.meaning;
+                } else {
+                    questionText = questionData.meaning;
+                    qHintElem.classList.add('hidden');
+                    correctAnswer = questionData.english;
+                }
+
+                qTextElem.textContent = questionText;
+
+                let options = [correctAnswer];
+                const others = phraseData.filter(item => item.id !== questionData.id);
+                const shuffledOthers = shuffleArray(others);
+                
+                for(let i=0; i<3; i++) {
+                    if(shuffledOthers[i]) {
+                        options.push(quizMode === 'en2ja' ? shuffledOthers[i].meaning : shuffledOthers[i].english);
+                    }
+                }
+                options = shuffleArray(options);
+
+                options.forEach((opt) => {
+                    const btn = document.createElement('button');
+                    btn.className = 'w-full p-4 bg-white border-2 border-gray-200 rounded-xl text-sm sm:text-base font-bold text-gray-700 hover:border-indigo-400 hover:bg-indigo-50 transition-all text-left shadow-sm';
+                    btn.textContent = opt;
+                    btn.onclick = () => checkAnswer(opt, correctAnswer, btn);
+                    optionsContainer.appendChild(btn);
+                });
+                
+                startTimer();
+            }
+        }
+
+        // --- 直接入力風 タイピングUI制御 ---
+        let currentTypingAnswer = "";
+        let typingCharElements = []; 
+
+        function setupTypingUI(answerText) {
+            const display = document.getElementById('typing-display');
+            const hiddenInput = document.getElementById('hidden-typing-input');
+            const hintLevel = document.querySelector('input[name="hint-level"]:checked').value;
+            
+            display.innerHTML = '';
+            hiddenInput.value = '';
+            hiddenInput.disabled = false;
+            currentTypingAnswer = answerText;
+            typingCharElements = [];
+            
+            let alphaCount = 0;
+
+            if (hintLevel === 'none') {
+                display.classList.add('no-hint-mode');
+            } else {
+                display.classList.remove('no-hint-mode');
+            }
+
+            const tokens = answerText.split(/(\s+|[^\w\s])/).filter(t => t.trim() !== '');
+
+            tokens.forEach(token => {
+                if (/^[a-zA-Z]+$/.test(token)) {
+                    const wordDiv = document.createElement('div');
+                    wordDiv.className = 'flex gap-1';
+                    
+                    for (let i = 0; i < token.length; i++) {
+                        const charSpan = document.createElement('span');
+                        charSpan.className = 'w-6 h-8 sm:w-8 sm:h-10 border-b-4 border-gray-300 text-xl sm:text-2xl text-center font-bold flex items-end justify-center pb-1 transition-colors';
+                        
+                        let showHint = false;
+                        if (hintLevel === 'initial' && i === 0) showHint = true;
+                        
+                        if (showHint) {
+                            charSpan.textContent = token[i];
+                            charSpan.classList.add('text-gray-400');
+                            charSpan.dataset.isHint = 'true';
+                        } else {
+                            charSpan.textContent = '';
+                            charSpan.dataset.isHint = 'false';
+                        }
+                        
+                        charSpan.dataset.targetChar = token[i];
+                        
+                        wordDiv.appendChild(charSpan);
+                        typingCharElements.push(charSpan);
+                        alphaCount++;
+                    }
+                    display.appendChild(wordDiv);
+                } else {
+                    if (token.trim() !== '') {
+                        const symSpan = document.createElement('span');
+                        symSpan.className = 'text-xl sm:text-2xl font-bold text-gray-400 self-end mb-1';
+                        symSpan.textContent = token;
+                        display.appendChild(symSpan);
+                    }
+                }
+            });
+
+            setTimeout(() => hiddenInput.focus(), 100);
+            return alphaCount;
+        }
+
+        function gameOver() {
+            clearAutoNext();
+            clearInterval(timerInterval);
+            document.getElementById('hidden-typing-input').disabled = true;
+            
+            const feedbackMsg = document.getElementById('feedback-message');
+            feedbackMsg.innerHTML = '<span class="text-red-600 bg-red-100 px-6 py-2 rounded-full text-xl sm:text-2xl font-black animate-pulse"><i class="fas fa-skull"></i> GAME OVER...</span>';
+            
+            const playerChar = document.getElementById('player-char');
+            playerChar.style.transition = 'all 0.5s ease-in';
+            playerChar.style.transform = 'translate(-50px, 50px) rotate(-90deg)';
+            playerChar.style.opacity = '0';
+
+            setTimeout(() => {
+                showResults(true); 
+            }, 2000);
+        }
+
+        function handleTypingInput() {
+            const hiddenInput = document.getElementById('hidden-typing-input');
+            const rawVal = hiddenInput.value;
+            const typedChars = rawVal.replace(/[^a-zA-Z]/g, '');
+            const correctChars = typingCharElements.map(span => span.dataset.targetChar).join('');
+            const feedbackMsg = document.getElementById('feedback-message');
+
+            let validTypedChars = "";
+            let expectedIndex = 0;
+            let currentMadeMistake = false;
+
+            for (let i = 0; i < typedChars.length; i++) {
+                if (i >= correctChars.length) break; 
+                
+                if (typedChars[i].toLowerCase() === correctChars[i].toLowerCase()) {
+                    validTypedChars += typedChars[i];
+                    expectedIndex = i + 1;
+                } else {
+                    hasMadeMistake = true;
+                    currentMadeMistake = true;
+                    
+                    if (currentMistakeIndex === i) {
+                        currentMistakeCount++;
+                    } else {
+                        currentMistakeIndex = i;
+                        currentMistakeCount = 1;
+                    }
+                    
+                    hiddenInput.value = validTypedChars;
+                    
+                    playerCurrentHP = Math.max(0, playerCurrentHP - 10);
+                    updateHPBar('player', playerCurrentHP, PLAYER_MAX_HP);
+                    
+                    const panel = document.getElementById('main-panel');
+                    panel.classList.remove('damage-player');
+                    void panel.offsetWidth; 
+                    panel.classList.add('damage-player');
+
+                    triggerAnim('enemy-char', 'anim-enemy-attack');
+                    triggerAnim('player-char', 'anim-char-damage');
+                    showHitEffect('💢');
+
+                    if (playerCurrentHP <= 0) {
+                        gameOver();
+                        return; 
+                    }
+
+                    feedbackMsg.innerHTML = '<span class="text-red-500 bg-red-100 px-4 py-1 rounded-full"><i class="fas fa-times-circle"></i> OUCH! (ダメージを受けました)</span>';
+                    
+                    const targetSpan = typingCharElements[i];
+                    targetSpan.classList.add('shake', 'border-red-400', 'bg-red-50');
+                    
+                    if (currentMistakeCount >= 3) {
+                        targetSpan.textContent = targetSpan.dataset.targetChar;
+                        targetSpan.classList.add('text-red-400');
+                        targetSpan.classList.remove('text-gray-400');
+                    } else {
+                        targetSpan.classList.add('text-red-500');
+                    }
+
+                    setTimeout(() => {
+                        targetSpan.classList.remove('shake', 'border-red-400', 'bg-red-50');
+                        if (currentMistakeCount < 3) {
+                            targetSpan.classList.remove('text-red-500');
+                        }
+                    }, 300);
+                    
+                    break;
+                }
+            }
+
+            if (!currentMadeMistake && validTypedChars.length > lastValidCount) {
+                const damage = validTypedChars.length - lastValidCount;
+                enemyCurrentHP = Math.max(0, enemyCurrentHP - damage);
+                updateHPBar('enemy', enemyCurrentHP, enemyMaxHP);
+                
+                triggerAnim('player-char', 'anim-player-attack');
+                triggerAnim('enemy-char', 'anim-enemy-char-damage');
+                showHitEffect('💥');
+
+                lastValidCount = validTypedChars.length;
+            }
+
+            typingCharElements.forEach((span, index) => {
+                if (index < validTypedChars.length) {
+                    const targetChar = span.dataset.targetChar;
+                    span.textContent = targetChar; 
+                    span.classList.remove('text-gray-400', 'border-gray-300', 'border-red-400', 'bg-red-50', 'text-red-500', 'text-red-400');
+                    span.classList.add('text-indigo-600', 'border-indigo-400');
+                } else if (index === expectedIndex && currentMistakeCount >= 3) {
+                    span.textContent = span.dataset.targetChar;
+                    span.classList.remove('text-gray-400', 'border-gray-300', 'text-indigo-600');
+                    span.classList.add('text-red-400', 'border-indigo-400');
+                } else {
+                    if (span.dataset.isHint === 'true') {
+                        span.textContent = span.dataset.targetChar;
+                        span.classList.add('text-gray-400', 'border-gray-300');
+                        span.classList.remove('text-indigo-600', 'border-indigo-400', 'border-red-400', 'bg-red-50', 'text-red-500', 'text-red-400');
+                    } else {
+                        span.textContent = '';
+                        span.classList.add('border-gray-300');
+                        span.classList.remove('text-indigo-600', 'border-indigo-400', 'border-red-400', 'bg-red-50', 'text-red-500', 'text-red-400');
+                    }
+                }
+            });
+
+            if (validTypedChars.length > 0 && validTypedChars.length === typedChars.length) {
+                feedbackMsg.innerHTML = '';
+                currentMistakeCount = 0;
+                currentMistakeIndex = validTypedChars.length;
+            }
+
+            if (validTypedChars.length === correctChars.length && correctChars.length > 0) {
+                finishTypingQuestion();
+            }
+        }
+
+        function finishTypingQuestion() {
+            const hiddenInput = document.getElementById('hidden-typing-input');
+            const feedbackMsg = document.getElementById('feedback-message');
+            
+            const timeTaken = stopTimer();
+            timeRecords.push(parseFloat(timeTaken)); 
+
+            hiddenInput.disabled = true;
+            updateHPBar('enemy', 0, enemyMaxHP);
+
+            const enemyChar = document.getElementById('enemy-char');
+            enemyChar.style.transition = 'all 0.6s cubic-bezier(.36,.07,.19,.97)';
+            enemyChar.style.transform = 'scaleX(-1) translate(-100px, -150px) rotate(-360deg) scale(0)';
+            enemyChar.style.opacity = '0';
+
+            if (!hasMadeMistake) {
+                feedbackMsg.innerHTML = `<span class="text-green-600 bg-green-100 px-6 py-2 rounded-full text-xl font-black shadow-sm"><i class="fas fa-trophy text-yellow-500"></i> PERFECT K.O.! <span class="text-sm ml-2 font-mono"><i class="fas fa-stopwatch text-gray-500"></i> ${timeTaken}秒</span></span>`;
+            } else {
+                feedbackMsg.innerHTML = `<span class="text-indigo-600 bg-indigo-100 px-6 py-2 rounded-full text-xl font-black shadow-sm"><i class="fas fa-fist-raised"></i> K.O.! <span class="text-sm ml-2 font-mono text-gray-600"><i class="fas fa-stopwatch"></i> ${timeTaken}秒</span></span>`;
+            }
+
+            const isLast = (currentQuestionIndex >= quizQuestions.length - 1);
+            if (!isLast) {
+                document.getElementById('next-btn').classList.remove('hidden');
+            } else {
+                document.getElementById('finish-btn').classList.remove('hidden');
+            }
+            startAutoNext(isLast);
+        }
+
+        function checkAnswer(selectedAnswer, correctAnswer, btnElement) {
+            const timeTaken = stopTimer();
+            timeRecords.push(parseFloat(timeTaken)); 
+            const buttons = document.getElementById('options-container').querySelectorAll('button');
+            
+            buttons.forEach(b => {
+                b.onclick = null;
+                b.classList.remove('hover:border-indigo-400', 'hover:bg-indigo-50');
+                b.classList.add('cursor-default');
+                
+                if (b.textContent === correctAnswer) {
+                    b.classList.add('border-green-500', 'bg-green-50', 'text-green-800');
+                    b.classList.remove('border-gray-200');
+                }
+            });
+
+            const feedbackMsg = document.getElementById('feedback-message');
+
+            if (selectedAnswer === correctAnswer) {
+                feedbackMsg.innerHTML = `<span class="text-green-600 bg-green-100 px-4 py-1 rounded-full"><i class="fas fa-check-circle"></i> 正解！ <span class="text-sm ml-2 font-mono"><i class="fas fa-stopwatch"></i> ${timeTaken}秒</span></span>`;
+                btnElement.classList.add('ring-4', 'ring-green-200');
+            } else {
+                feedbackMsg.innerHTML = `<span class="text-red-500 bg-red-100 px-4 py-1 rounded-full"><i class="fas fa-times-circle"></i> 残念... <span class="text-sm ml-2 font-mono"><i class="fas fa-stopwatch"></i> ${timeTaken}秒</span></span>`;
+                btnElement.classList.add('border-red-400', 'bg-red-50', 'text-red-700');
+                btnElement.classList.remove('border-gray-200');
+            }
+
+            const isLast = (currentQuestionIndex >= quizQuestions.length - 1);
+            if (!isLast) {
+                document.getElementById('next-btn').classList.remove('hidden');
+            } else {
+                document.getElementById('finish-btn').classList.remove('hidden');
+            }
+            startAutoNext(isLast);
+        }
+
+        function nextQuestion() {
+            clearAutoNext(); 
+            currentQuestionIndex++;
+            loadQuestion();
+        }
+
+        function showResults(isGameOver = false) {
+            clearAutoNext(); 
+            document.getElementById('quiz-play').classList.add('hidden');
+            document.getElementById('quiz-play').classList.remove('flex');
+            document.getElementById('quiz-result').classList.remove('hidden');
+            
+            const title = document.getElementById('result-title');
+            const emoji = document.getElementById('result-emoji');
+            
+            if (isGameOver) {
+                title.textContent = "GAME OVER...";
+                title.className = "text-3xl sm:text-4xl font-black mb-4 text-red-600 tracking-wider";
+                emoji.textContent = '💀';
+                emoji.className = "text-6xl mb-6 text-gray-700";
+            } else {
+                title.textContent = "クイズ完了！";
+                title.className = "text-2xl sm:text-3xl font-bold mb-4 text-gray-800";
+                emoji.textContent = '🏆';
+                emoji.className = "text-6xl mb-6 animate-bounce";
+            }
+
+            let totalTime = timeRecords.reduce((sum, val) => sum + val, 0);
+            let avgTime = timeRecords.length > 0 ? (totalTime / timeRecords.length).toFixed(1) : "0.0";
+            document.getElementById('average-time').textContent = avgTime;
+        }
+
+        function resetQuiz() {
+            clearAutoNext();
+            clearInterval(timerInterval);
+            document.getElementById('quiz-timer').textContent = '0.0秒';
+            document.getElementById('quiz-result').classList.add('hidden');
+            document.getElementById('quiz-setup').classList.remove('hidden');
+            
+            document.getElementById('quiz-play').classList.add('hidden');
+            document.getElementById('quiz-play').classList.remove('flex');
+            
+            document.getElementById('main-panel').classList.remove('damage-player');
+            
+            const playerChar = document.getElementById('player-char');
+            if (playerChar) {
+                playerChar.style = '';
+            }
+        }
+
+        // ==========================================
+        // 🔥 疑問詞特訓機能 (落ちものゲーム)
+        // ==========================================
+        let whGameActive = false;
+        let whScore = 20; // 0点でゲームオーバーにするため、初期値を20ポイントに設定（猶予用）
+        let whLife = 3;
+        let whLevel = 1;
+        let whBaseLevel = 1; 
+        let whSpeed = 60; 
+        let whSpawnInterval = 2500; 
+        let whLastSpawnTime = 0;
+        let whActiveCards = [];
+        let whLastFrameTime = 0;
+        let whAnimFrame = null;
+        let whCardIdCounter = 0;
+        
+        // 乱れ打ち（ボタン連打）防止用のロックフラグ
+        let whButtonsLocked = false;
+
+        function startWhGame(level = 1) {
+            document.getElementById('wh-setup').classList.add('hidden');
+            document.getElementById('wh-result').classList.add('hidden');
+            document.getElementById('wh-play').classList.remove('hidden');
+            document.getElementById('wh-play').classList.add('flex');
+            
+            // ロックフラグとボタンUIをリセット
+            whButtonsLocked = false;
+            const container = document.getElementById('wh-buttons-container');
+            if(container) {
+                container.classList.remove('opacity-50', 'pointer-events-none');
+            }
+            
+            whScore = 20; // 初期持ち点を20に変更
+            whLife = 3;
+            whBaseLevel = level;
+            whLevel = level;
+            
+            // 選択されたレベルに応じて初期スピードと出現間隔をさらにゆっくりに設定
+            if (level === 1) {
+                whSpeed = 25; 
+                whSpawnInterval = 4000;
+            } else if (level === 2) {
+                whSpeed = 45; 
+                whSpawnInterval = 3000;
+            } else if (level === 3) {
+                whSpeed = 70; 
+                whSpawnInterval = 2000;
+            }
+            
+            whActiveCards = [];
+            whCardIdCounter = 0;
+            document.getElementById('wh-falling-area').innerHTML = '';
+            
+            updateWhUI();
+            
+            whGameActive = true;
+            whLastFrameTime = performance.now();
+            whLastSpawnTime = performance.now() - whSpawnInterval; 
+            
+            whAnimFrame = requestAnimationFrame(whGameLoop);
+        }
+
+        function whGameLoop(currentTime) {
+            if (!whGameActive) return;
+            
+            let deltaTime = (currentTime - whLastFrameTime) / 1000;
+            whLastFrameTime = currentTime;
+            
+            if (currentTime - whLastSpawnTime > whSpawnInterval) {
+                spawnWhCard();
+                whLastSpawnTime = currentTime;
+            }
+            
+            const containerHeight = document.getElementById('wh-falling-area').clientHeight;
+            const deadline = containerHeight - 20; 
+            
+            for (let i = whActiveCards.length - 1; i >= 0; i--) {
+                let card = whActiveCards[i];
+                card.y += whSpeed * deltaTime;
+                
+                if (card.element) {
+                    card.element.style.transform = `translateY(${card.y}px)`;
+                }
+                
+                if (card.y > deadline) {
+                    damageWhLife();
+                    removeWhCard(i);
+                }
+            }
+            
+            if (whGameActive && whLife > 0) {
+                whAnimFrame = requestAnimationFrame(whGameLoop);
+            }
+        }
+
+        function spawnWhCard() {
+            const q = whData[Math.floor(Math.random() * whData.length)];
+            const id = 'wh-card-' + whCardIdCounter++;
+            
+            const wrapper = document.createElement('div');
+            wrapper.id = id;
+            wrapper.className = 'absolute w-full top-0 left-0 z-10 transition-transform duration-75 linear';
+            wrapper.style.transform = 'translateY(-100px)';
+            
+            const inner = document.createElement('div');
+            inner.className = 'mx-auto w-11/12 sm:w-3/4 max-w-sm bg-white p-3 rounded-xl shadow-[0_4px_15px_rgba(0,0,0,0.3)] border-b-4 border-indigo-300 text-center wh-inner-card relative';
+            inner.innerHTML = `
+                <div class="text-sm font-bold text-indigo-900 mb-1 leading-tight">${q.ja}</div>
+                <div class="text-[13px] text-gray-600 font-mono tracking-wider font-bold bg-gray-100 py-1 rounded mt-1">${q.en}</div>
+            `;
+            
+            wrapper.appendChild(inner);
+            document.getElementById('wh-falling-area').appendChild(wrapper);
+            
+            whActiveCards.push({
+                id: id,
+                element: wrapper,
+                innerElement: inner,
+                y: -100,
+                ans: q.ans
+            });
+        }
+
+        // 疑問詞の判定処理 (お手つきペナルティ機能を追加)
+        function whCheck(selectedAns, btnElement) {
+            // ゲーム中ではない、またはボタンロック時間中なら何もしない
+            if (!whGameActive || whActiveCards.length === 0 || whButtonsLocked) return;
+            
+            whActiveCards.sort((a, b) => b.y - a.y);
+            const visibleCards = whActiveCards.filter(c => c.y > -50);
+            if(visibleCards.length === 0) return;
+            
+            const targetCard = visibleCards[0];
+            const targetIndex = whActiveCards.findIndex(c => c.id === targetCard.id);
+            
+            if (targetCard.ans === selectedAns) {
+                // 【正解】
+                targetCard.innerElement.classList.add('wh-correct');
+                const wrapper = targetCard.element;
+                setTimeout(() => { if(wrapper) wrapper.remove(); }, 200);
+                whActiveCards.splice(targetIndex, 1);
+                
+                whScore += 10;
+                showWhScorePop(targetCard.y, '+10', 'text-orange-400');
+                checkWhLevelUp();
+                updateWhUI();
+            } else {
+                // 【不正解 - 乱れ打ち対策】
+                targetCard.innerElement.classList.remove('wh-wrong');
+                void targetCard.innerElement.offsetWidth;
+                targetCard.innerElement.classList.add('wh-wrong');
+                
+                // ミスでスコアが10点減点 (連打ペナルティ)
+                whScore = Math.max(0, whScore - 10);
+                showWhScorePop(targetCard.y, '-10', 'text-red-500 font-black');
+                updateWhUI();
+                
+                // 💥 スコアが0点になったら即ゲームオーバーにする
+                if (whScore <= 0) {
+                    endWhGame(false);
+                    return;
+                }
+                
+                // 💥 乱れ打ち防止：ボタンを0.8秒間完全にロックする
+                whButtonsLocked = true;
+                const buttonsContainer = document.getElementById('wh-buttons-container');
+                buttonsContainer.classList.add('opacity-50', 'pointer-events-none');
+                
+                // ロック中であるグラフィック効果
+                const oldText = btnElement.innerHTML;
+                btnElement.classList.remove('bg-blue-600', 'bg-green-600', 'bg-red-600', 'bg-yellow-500', 'bg-purple-600', 'bg-pink-600');
+                btnElement.classList.add('bg-slate-700');
+                btnElement.innerHTML = '<i class="fas fa-lock text-sm"></i> COOLING';
+                
+                setTimeout(() => {
+                    whButtonsLocked = false;
+                    buttonsContainer.classList.remove('opacity-50', 'pointer-events-none');
+                    btnElement.classList.remove('bg-slate-700');
+                    // 元のカラークラスに戻す
+                    if(selectedAns === 'What') btnElement.classList.add('bg-blue-600');
+                    if(selectedAns === 'How') btnElement.classList.add('bg-green-600');
+                    if(selectedAns === 'Where') btnElement.classList.add('bg-red-600');
+                    if(selectedAns === 'When') btnElement.classList.add('bg-yellow-500');
+                    if(selectedAns === 'Who') btnElement.classList.add('bg-purple-600');
+                    if(selectedAns === 'Why') btnElement.classList.add('bg-pink-600');
+                    btnElement.innerHTML = oldText;
+                }, 800); // 0.8秒間ボタンをロックして連打を防止
+            }
+        }
+
+        function showWhScorePop(yPos, text, colorClass) {
+            const area = document.getElementById('wh-falling-area');
+            const pop = document.createElement('div');
+            pop.className = `absolute left-1/2 -translate-x-1/2 z-20 pointer-events-none wh-score-pop ${colorClass}`;
+            pop.textContent = text;
+            pop.style.top = Math.max(0, yPos) + 'px';
+            area.appendChild(pop);
+            setTimeout(() => pop.remove(), 500);
+        }
+
+        function checkWhLevelUp() {
+            // スコアに応じてレベルアップ（開始レベルに加算していく）
+            const newLevel = Math.floor((whScore - 20) / 50) + whBaseLevel;
+            if (newLevel > whLevel) {
+                whLevel = newLevel;
+                whSpeed += 10; 
+                whSpawnInterval = Math.max(1000, whSpawnInterval - 150);
+                
+                const playArea = document.getElementById('wh-falling-area');
+                const lvlUp = document.createElement('div');
+                lvlUp.className = 'absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 text-4xl sm:text-5xl font-black text-yellow-300 drop-shadow-[0_0_15px_rgba(255,200,0,0.8)] z-50 pointer-events-none animate-ping';
+                lvlUp.textContent = 'LEVEL UP!!';
+                playArea.appendChild(lvlUp);
+                setTimeout(() => lvlUp.remove(), 1000);
+            }
+        }
+
+        function damageWhLife() {
+            whLife--;
+            updateWhUI();
+            
+            const playArea = document.getElementById('wh-play').firstElementChild;
+            playArea.classList.remove('damage-player');
+            void playArea.offsetWidth;
+            playArea.classList.add('damage-player');
+            
+            if (whLife <= 0) {
+                endWhGame(false);
+            }
+        }
+
+        function removeWhCard(index) {
+            const card = whActiveCards[index];
+            if (card && card.element) {
+                card.element.remove();
+            }
+            whActiveCards.splice(index, 1);
+        }
+
+        function endWhGame(isForced = false) {
+            whGameActive = false;
+            cancelAnimationFrame(whAnimFrame);
+            
+            if (!isForced) {
+                document.getElementById('wh-play').classList.add('hidden');
+                document.getElementById('wh-play').classList.remove('flex');
+                document.getElementById('wh-result').classList.remove('hidden');
+                document.getElementById('wh-final-score').textContent = whScore;
+                document.getElementById('wh-final-level').textContent = whLevel;
+            }
+        }
+
+        function updateWhUI() {
+            document.getElementById('wh-score').textContent = whScore;
+            document.getElementById('wh-level').textContent = whLevel;
+            
+            let hearts = '';
+            for(let i=0; i<3; i++) {
+                if(i < whLife) hearts += '❤️';
+                else hearts += '🖤';
+            }
+            document.getElementById('wh-life').textContent = hearts;
+        }
+        
+        function resetWhGame() {
+            document.getElementById('wh-result').classList.add('hidden');
+            document.getElementById('wh-setup').classList.remove('hidden');
+        }
+
+
+        // ==========================================
+        // 🔄 画面タブ切り替え処理
+        // ==========================================
+        function switchTab(tabName) {
+            clearAutoNext(); 
+            clearInterval(timerInterval); 
+            if(whGameActive) endWhGame(true); // 特訓モード終了
+            
+            const btnList = document.getElementById('tab-list');
+            const btnQuiz = document.getElementById('tab-quiz');
+            const btnWh = document.getElementById('tab-wh');
+            const btnAdmin = document.getElementById('tab-admin');
+            
+            const viewList = document.getElementById('view-list');
+            const viewQuiz = document.getElementById('view-quiz');
+            const viewWh = document.getElementById('view-wh');
+            const viewAdmin = document.getElementById('view-admin');
+
+            const baseClass = "px-4 py-2 sm:px-5 sm:py-2.5 rounded-full text-sm font-semibold transition-all duration-200 border ";
+
+            btnList.className = baseClass + "bg-white text-indigo-600 hover:bg-indigo-50 shadow-sm border-transparent";
+            btnQuiz.className = baseClass + "bg-white text-indigo-600 hover:bg-indigo-50 shadow-sm border-transparent";
+            btnWh.className = baseClass + "bg-white text-orange-500 hover:bg-orange-50 shadow-sm border-orange-100";
+            btnAdmin.className = baseClass + "bg-gray-100 text-gray-600 hover:bg-gray-200 shadow-sm border-transparent";
+            
+            if(tabName === 'wh') {
+                const badge = btnWh.querySelector('span');
+                if(badge) badge.classList.remove('animate-pulse');
+            }
+
+            viewList.classList.add('hidden');
+            viewQuiz.classList.add('hidden');
+            viewWh.classList.add('hidden');
+            viewAdmin.classList.add('hidden');
+
+            if (tabName === 'list') {
+                btnList.className = baseClass + "bg-indigo-600 text-white shadow-md border-indigo-600";
+                viewList.classList.remove('hidden');
+            } else if (tabName === 'quiz') {
+                btnQuiz.className = baseClass + "bg-indigo-600 text-white shadow-md border-indigo-600";
+                viewQuiz.classList.remove('hidden');
+                resetQuiz();
+            } else if (tabName === 'wh') {
+                btnWh.className = baseClass + "bg-orange-500 text-white shadow-md border-orange-500";
+                viewWh.classList.remove('hidden');
+            } else if (tabName === 'admin') {
+                btnAdmin.className = baseClass + "bg-gray-600 text-white shadow-md border-gray-600";
+                viewAdmin.classList.remove('hidden');
+            }
+        }
+
+        window.onload = () => {
+            loadData();
+
+            document.addEventListener('keydown', function(e) {
+                if (e.key === 'Enter') {
+                    const quizPlay = document.getElementById('quiz-play');
+                    const nextBtn = document.getElementById('next-btn');
+                    const finishBtn = document.getElementById('finish-btn');
+                    
+                    if (!quizPlay.classList.contains('hidden')) {
+                        if (!nextBtn.classList.contains('hidden')) {
+                            nextBtn.click();
+                        } else if (!finishBtn.classList.contains('hidden')) {
+                            finishBtn.click();
+                        }
+                    }
+                }
+            });
+        };
+
+    </script>
+</body>
+</html>
