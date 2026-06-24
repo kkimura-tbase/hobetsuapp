@@ -126,20 +126,35 @@
             0% { transform: translate(-50%, 0) scale(0.5); opacity: 1; }
             100% { transform: translate(-50%, -50px) scale(1.5); opacity: 0; }
         }
+        
+        /* カスタムスクロールバー */
+        .custom-scrollbar::-webkit-scrollbar {
+            width: 6px;
+        }
+        .custom-scrollbar::-webkit-scrollbar-track {
+            background: transparent;
+        }
+        .custom-scrollbar::-webkit-scrollbar-thumb {
+            background-color: rgba(156, 163, 175, 0.5);
+            border-radius: 20px;
+        }
+        .custom-scrollbar::-webkit-scrollbar-thumb:hover {
+            background-color: rgba(107, 114, 128, 0.8);
+        }
     </style>
 </head>
-<body class="bg-gradient-to-br from-blue-50 to-indigo-100 min-h-screen font-sans text-gray-800 py-6">
+<body class="bg-gradient-to-br from-blue-50 to-indigo-100 h-[100dvh] font-sans text-gray-800 py-4 sm:py-6 flex flex-col overflow-hidden">
     
-    <div class="max-w-3xl mx-auto px-4 sm:px-6">
+    <div class="max-w-3xl mx-auto px-4 sm:px-6 w-full flex flex-col flex-1 min-h-0">
         
         <!-- ヘッダー -->
-        <header class="text-center mb-8 fade-in">
+        <header class="text-center mb-4 sm:mb-8 fade-in flex-none">
             <h1 class="text-2xl sm:text-3xl font-bold text-indigo-800 mb-2"><i class="fas fa-cut mr-2"></i>サロン英語マスター</h1>
             <p class="text-sm sm:text-base text-gray-600">接客で使える英語フレーズを覚えて、クイズで復習しよう！</p>
         </header>
 
         <!-- タブナビゲーション -->
-        <nav class="flex justify-center space-x-2 sm:space-x-3 mb-6 fade-in flex-wrap gap-y-2">
+        <nav class="flex justify-center space-x-2 sm:space-x-3 mb-4 sm:mb-6 fade-in flex-wrap gap-y-2 flex-none">
             <button id="tab-list" class="px-4 py-2 sm:px-5 sm:py-2.5 rounded-full text-sm font-semibold transition-all duration-200 border bg-indigo-600 text-white shadow-md border-indigo-600" onclick="switchTab('list')">
                 <i class="fas fa-book-open mr-1"></i> フレーズ集
             </button>
@@ -155,18 +170,30 @@
         </nav>
 
         <!-- メインコンテンツ -->
-        <main id="main-panel" class="glass-panel rounded-2xl shadow-xl p-4 sm:p-8 min-h-[400px] transition-all border border-white">
+        <main id="main-panel" class="glass-panel rounded-2xl shadow-xl flex-1 transition-all border border-white flex flex-col min-h-0 overflow-hidden relative !p-0">
             
             <!-- フレーズ一覧ビュー -->
-            <div id="view-list" class="fade-in">
-                <h2 class="text-lg font-bold border-b-2 border-indigo-100 pb-2 mb-4 text-indigo-900">ストック一覧</h2>
-                <div id="phrase-list-container" class="space-y-4">
+            <div id="view-list" class="fade-in flex flex-col h-full">
+                <!-- 固定ヘッダー部分 -->
+                <div class="flex-none p-4 sm:p-8 pb-0 sm:pb-0">
+                    <div class="flex justify-between items-center border-b-2 border-indigo-100 pb-2 mb-2 sm:mb-4">
+                        <h2 class="text-lg font-bold text-indigo-900">ストック一覧</h2>
+                        <!-- 一斉切り替えボタン -->
+                        <button id="toggle-all-btn" onclick="toggleAllMask()" class="text-xs sm:text-sm px-3 py-1.5 sm:px-4 sm:py-2 bg-white text-indigo-600 rounded-full hover:bg-indigo-50 transition-colors border border-indigo-200 shadow-sm font-bold flex items-center gap-1 group">
+                            <i class="fas fa-eye text-indigo-400 group-hover:text-indigo-600 transition-colors"></i> <span>全表示</span>
+                        </button>
+                    </div>
+                    <div class="text-[10px] sm:text-xs text-gray-500 text-right mb-2"><i class="fas fa-hand-pointer mr-1"></i>各英語フレーズをタップして個別に隠すことができます</div>
+                </div>
+                
+                <!-- スクロール可能なリストエリア -->
+                <div id="phrase-list-container" class="space-y-4 overflow-y-auto flex-1 p-4 sm:p-8 pt-0 sm:pt-0 pb-6 custom-scrollbar">
                     <!-- JavaScriptでカードが生成されます -->
                 </div>
             </div>
 
             <!-- クイズビュー -->
-            <div id="view-quiz" class="hidden fade-in text-center">
+            <div id="view-quiz" class="hidden fade-in text-center h-full overflow-y-auto p-4 sm:p-8 custom-scrollbar">
                 
                 <!-- クイズ設定画面 -->
                 <div id="quiz-setup" class="space-y-6 py-8">
@@ -305,7 +332,7 @@
             </div>
 
             <!-- 🔥 疑問詞特訓ビュー (落ちものゲーム) -->
-            <div id="view-wh" class="hidden fade-in relative">
+            <div id="view-wh" class="hidden fade-in relative h-full overflow-y-auto p-4 sm:p-8 custom-scrollbar">
                 
                 <!-- 特訓セットアップ画面 -->
                 <div id="wh-setup" class="text-center py-8">
@@ -383,7 +410,7 @@
             </div>
 
             <!-- 管理ビュー (教師用疑似エディタ) -->
-            <div id="view-admin" class="hidden fade-in">
+            <div id="view-admin" class="hidden fade-in h-full overflow-y-auto p-4 sm:p-8 custom-scrollbar">
                 <div class="bg-indigo-50 border border-indigo-200 rounded-xl p-5 sm:p-6 mb-8 text-center shadow-inner relative overflow-hidden">
                     <div class="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-indigo-500 to-purple-500"></div>
                     <h2 class="text-xl font-bold text-indigo-900 mb-2"><i class="fas fa-magic mr-2"></i>アプリに問題を反映する</h2>
@@ -613,6 +640,75 @@
         }
 
         // ==========================================
+        // 👁️ フレーズマスキング機能
+        // ==========================================
+        let maskStates = {}; // { id: state(0~3) }
+        let globalMaskLevel = 0; // 0:全表示, 1:頭文字ヒント, 2:文字数ヒント, 3:ノーヒント
+
+        const maskLabels = [
+            { icon: 'fa-eye', text: '全表示' },
+            { icon: 'fa-lightbulb', text: '頭文字ヒント' },
+            { icon: 'fa-comment-dots', text: '文字数ヒント' },
+            { icon: 'fa-eye-slash', text: 'ノーヒント' }
+        ];
+
+        function toggleMask(id) {
+            maskStates[id] = ((maskStates[id] || 0) + 1) % 4;
+            updateMaskDisplay(id);
+        }
+
+        function toggleAllMask() {
+            globalMaskLevel = (globalMaskLevel + 1) % 4;
+            phraseData.forEach(item => {
+                maskStates[item.id] = globalMaskLevel;
+                updateMaskDisplay(item.id);
+            });
+            updateToggleAllBtn();
+        }
+
+        function updateToggleAllBtn() {
+            const btn = document.getElementById('toggle-all-btn');
+            if(!btn) return;
+            const state = maskLabels[globalMaskLevel];
+            btn.innerHTML = `<i class="fas ${state.icon} text-indigo-400 group-hover:text-indigo-600 transition-colors"></i> <span>${state.text}</span>`;
+            
+            if(globalMaskLevel > 0) {
+                btn.classList.add('bg-indigo-100', 'border-indigo-300');
+                btn.classList.remove('bg-white', 'border-indigo-200');
+            } else {
+                btn.classList.remove('bg-indigo-100', 'border-indigo-300');
+                btn.classList.add('bg-white', 'border-indigo-200');
+            }
+        }
+
+        function getMaskedHtml(text, state) {
+            if (state === 0) return text;
+            if (state === 3) return `<span class="opacity-0 select-none">${text}</span>`; // 真っ白（領域は維持）
+            
+            return text.replace(/[a-zA-Z]+/g, (match) => {
+                if (state === 1) {
+                    return `<span class="font-mono tracking-widest text-indigo-400/80">` + match.charAt(0) + '_'.repeat(match.length - 1) + `</span>`;
+                } else if (state === 2) {
+                    return `<span class="font-mono tracking-widest text-indigo-400/80">` + '_'.repeat(match.length) + `</span>`;
+                }
+            });
+        }
+
+        function updateMaskDisplay(id) {
+            const elem = document.getElementById(`phrase-en-${id}`);
+            if(!elem) return;
+            const originalText = elem.dataset.original;
+            const state = maskStates[id] || 0;
+            elem.innerHTML = getMaskedHtml(originalText, state);
+            
+            const readingElem = document.getElementById(`phrase-reading-${id}`);
+            if (readingElem) {
+                if (state > 0) readingElem.classList.add('opacity-0');
+                else readingElem.classList.remove('opacity-0');
+            }
+        }
+
+        // ==========================================
         // 🔧 管理（疑似エディタ）機能
         // ==========================================
         function renderAdminList() {
@@ -790,14 +886,20 @@
                     dialoguesHTML = '<p class="text-sm text-gray-500 text-center py-4 bg-gray-50 rounded-lg">会話例は登録されていません。</p>';
                 }
 
+                const currentMaskState = maskStates[item.id] || 0;
+                const safeEnglishText = item.english.replace(/"/g, '&quot;');
+
                 card.innerHTML = `
                     <div class="p-4 sm:p-5">
-                        <div class="flex flex-col sm:flex-row sm:items-start justify-between gap-2">
-                            <div>
-                                <h3 class="text-lg sm:text-xl font-bold text-indigo-700">${item.english}</h3>
-                                ${item.reading ? `<p class="text-xs sm:text-sm text-gray-500 mt-1"><i class="fas fa-volume-up opacity-50 mr-1"></i>${item.reading}</p>` : ''}
+                        <div class="flex flex-col sm:flex-row sm:items-start justify-between gap-3 sm:gap-2">
+                            <div class="flex-1 cursor-pointer group hover:bg-gray-50 -mx-2 px-2 py-1 rounded-lg transition-colors relative" onclick="toggleMask(${item.id})" title="タップで表示切り替え">
+                                <h3 id="phrase-en-${item.id}" data-original="${safeEnglishText}" class="text-lg sm:text-xl font-bold text-indigo-700 transition-all select-none break-words pr-8">
+                                    ${getMaskedHtml(item.english, currentMaskState)}
+                               </h3>
+                                ${item.reading ? `<p id="phrase-reading-${item.id}" class="text-xs sm:text-sm text-gray-500 mt-1 transition-opacity duration-200 ${currentMaskState > 0 ? 'opacity-0' : ''}"><i class="fas fa-volume-up opacity-50 mr-1"></i>${item.reading}</p>` : ''}
+                                <div class="absolute top-2 right-2 text-[10px] sm:text-xs text-indigo-300 opacity-0 group-hover:opacity-100 transition-opacity"><i class="fas fa-hand-pointer mr-1"></i>隠す</div>
                             </div>
-                            <div class="self-start bg-indigo-100 text-indigo-800 px-3 py-1.5 rounded-lg text-sm font-bold shadow-sm">
+                            <div class="self-start bg-indigo-100 text-indigo-800 px-3 py-1.5 rounded-lg text-sm font-bold shadow-sm flex-none">
                                 ${item.meaning}
                             </div>
                         </div>
