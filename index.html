@@ -2,13 +2,18 @@
 <html lang="ja">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>美容室 英語フレーズ学習アプリ</title>
-    <!-- Tailwind CSS (スタイリング用) -->
+    <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
-    <!-- FontAwesome (アイコン用) -->
+    <!-- FontAwesome -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
+        body {
+            /* スマホのブラウザでも画面高さにピッタリ合わせる */
+            height: 100dvh; 
+            overflow: hidden;
+        }
         .glass-panel {
             background: rgba(255, 255, 255, 0.95);
             backdrop-filter: blur(10px);
@@ -21,11 +26,10 @@
             from { opacity: 0; transform: translateY(5px); }
             to { opacity: 1; transform: translateY(0); }
         }
-        /* アコーディオンの矢印アニメーション用 */
         details > summary { list-style: none; }
         details > summary::-webkit-details-marker { display: none; }
         
-        /* タイピングエラー時のマス目の揺れ */
+        /* 揺れ・ダメージエフェクト */
         @keyframes shake {
             0%, 100% { transform: translateX(0); }
             25% { transform: translateX(-5px); }
@@ -33,16 +37,16 @@
             75% { transform: translateX(-5px); }
         }
         .shake { animation: shake 0.3s ease-in-out; }
-
+        
         /* ヒントなしモードの時は下線を透明にする */
         .no-hint-mode span {
             border-bottom-color: transparent !important;
         }
 
-        /* 画面全体のダメージエフェクト（赤枠フラッシュ） */
+        /* 画面全体のダメージエフェクト */
         @keyframes damagePlayer {
             0% { transform: translateX(0); box-shadow: 0 0 0 rgba(239,68,68,0); }
-            20% { transform: translateX(-10px) rotate(-1deg); box-shadow: 0 0 30px 10px rgba(239,68,68,0.5); }
+            20% { transform: translateX(-10px) rotate(-1deg); box-shadow: inset 0 0 30px 10px rgba(239,68,68,0.5); }
             40% { transform: translateX(10px) rotate(1deg); }
             60% { transform: translateX(-10px) rotate(-1deg); }
             80% { transform: translateX(10px) rotate(1deg); }
@@ -53,9 +57,7 @@
             border-color: #ef4444 !important;
         }
 
-        /* --------------------------------------
-           格闘ゲーム キャラクターアニメーション 
-           -------------------------------------- */
+        /* 格闘ゲーム キャラクターアニメーション */
         @keyframes playerAttack {
             0% { transform: translateX(0) rotate(0deg); }
             30% { transform: translateX(40px) rotate(20deg); }
@@ -97,12 +99,8 @@
         }
         .anim-hit { animation: hitPop 0.3s ease-out forwards; display: block !important; }
 
-        /* --------------------------------------
-           疑問詞特訓用（落ちものゲーム）エフェクト 
-           -------------------------------------- */
-        .wh-correct {
-            animation: whPop 0.2s ease-out forwards;
-        }
+        /* 疑問詞特訓用（落ちものゲーム）エフェクト */
+        .wh-correct { animation: whPop 0.2s ease-out forwards; }
         @keyframes whPop {
             0% { transform: scale(1); opacity: 1; }
             100% { transform: scale(1.2); opacity: 0; filter: brightness(1.5); }
@@ -112,91 +110,129 @@
             background-color: #fee2e2 !important;
             border-color: #ef4444 !important;
         }
-        .wh-score-pop {
-            animation: scorePop 0.5s ease-out forwards;
-        }
+        .wh-score-pop { animation: scorePop 0.5s ease-out forwards; }
         @keyframes scorePop {
             0% { transform: translate(-50%, 0) scale(0.5); opacity: 1; }
             100% { transform: translate(-50%, -50px) scale(1.5); opacity: 0; }
         }
-        .wh-penalty-pop {
-            animation: penaltyPop 0.5s ease-out forwards;
+
+        /* --------------------------------------
+           新：ワード・スナイパー用
+           -------------------------------------- */
+        .shoot-target {
+            position: absolute;
+            transition: transform 0.1s linear;
+            cursor: crosshair;
         }
-        @keyframes penaltyPop {
-            0% { transform: translate(-50%, 0) scale(0.5); opacity: 1; }
-            100% { transform: translate(-50%, -50px) scale(1.5); opacity: 0; }
+        .shoot-target:hover .enemy-icon {
+            filter: drop-shadow(0 0 8px red);
+            transform: scale(1.1);
         }
+        .word-label {
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.5);
+        }
+        .bullet-anim {
+            position: absolute;
+            font-size: 24px;
+            z-index: 50;
+            pointer-events: none;
+            animation: spin 0.3s linear infinite;
+        }
+        @keyframes spin {
+            100% { transform: rotate(360deg); }
+        }
+        @keyframes flashShootDamage {
+            0% { box-shadow: inset 0 0 0 rgba(239,68,68,0); }
+            50% { box-shadow: inset 0 0 40px 10px rgba(239,68,68,0.6); }
+            100% { box-shadow: inset 0 0 0 rgba(239,68,68,0); }
+        }
+        .shoot-damage-flash { animation: flashShootDamage 0.4s ease-out; }
         
-        /* カスタムスクロールバー */
-        .custom-scrollbar::-webkit-scrollbar {
-            width: 6px;
+        .anim-shoot-attack { animation: shootAttackMove 0.2s ease-out; }
+        @keyframes shootAttackMove {
+            0% { transform: translateX(-50%) scaleX(-1); }
+            50% { transform: translateX(calc(-50% - 30px)) scaleX(-1) rotate(-20deg); }
+            100% { transform: translateX(-50%) scaleX(-1); }
         }
-        .custom-scrollbar::-webkit-scrollbar-track {
-            background: transparent;
+
+        /* --------------------------------------
+           新：フレーズマスキング用
+           -------------------------------------- */
+        .phrase-mask-target {
+            cursor: pointer;
+            transition: all 0.2s;
+            position: relative;
         }
-        .custom-scrollbar::-webkit-scrollbar-thumb {
-            background-color: rgba(156, 163, 175, 0.5);
-            border-radius: 20px;
-        }
-        .custom-scrollbar::-webkit-scrollbar-thumb:hover {
-            background-color: rgba(107, 114, 128, 0.8);
+        .phrase-mask-target:hover::after {
+            content: 'タップで隠す/表示';
+            position: absolute;
+            top: -25px;
+            left: 0;
+            background: #4f46e5;
+            color: white;
+            font-size: 10px;
+            padding: 2px 6px;
+            border-radius: 4px;
+            white-space: nowrap;
+            opacity: 0.8;
+            pointer-events: none;
         }
     </style>
 </head>
-<body class="bg-gradient-to-br from-blue-50 to-indigo-100 h-[100dvh] font-sans text-gray-800 py-4 sm:py-6 flex flex-col overflow-hidden">
+<body class="bg-gradient-to-br from-blue-50 to-indigo-100 font-sans text-gray-800 flex flex-col py-2 sm:py-4">
     
-    <div class="max-w-3xl mx-auto px-4 sm:px-6 w-full flex flex-col flex-1 min-h-0">
+    <div class="max-w-3xl mx-auto px-2 sm:px-6 w-full flex-1 flex flex-col overflow-hidden">
         
-        <!-- ヘッダー -->
-        <header class="text-center mb-4 sm:mb-8 fade-in flex-none">
-            <h1 class="text-2xl sm:text-3xl font-bold text-indigo-800 mb-2"><i class="fas fa-cut mr-2"></i>サロン英語マスター</h1>
-            <p class="text-sm sm:text-base text-gray-600">接客で使える英語フレーズを覚えて、クイズで復習しよう！</p>
+        <!-- ヘッダー (固定) -->
+        <header class="text-center mb-4 flex-shrink-0">
+            <h1 class="text-xl sm:text-2xl font-black text-indigo-800 mb-1"><i class="fas fa-cut mr-2"></i>サロン英語マスター</h1>
         </header>
 
-        <!-- タブナビゲーション -->
-        <nav class="flex justify-center space-x-2 sm:space-x-3 mb-4 sm:mb-6 fade-in flex-wrap gap-y-2 flex-none">
-            <button id="tab-list" class="px-4 py-2 sm:px-5 sm:py-2.5 rounded-full text-sm font-semibold transition-all duration-200 border bg-indigo-600 text-white shadow-md border-indigo-600" onclick="switchTab('list')">
+        <!-- タブナビゲーション (固定) -->
+        <nav class="flex justify-center space-x-1 sm:space-x-2 mb-4 flex-shrink-0 overflow-x-auto pb-2 scrollbar-hide">
+            <button id="tab-list" class="px-3 py-2 sm:px-4 sm:py-2 rounded-full text-xs sm:text-sm font-bold transition-all border whitespace-nowrap bg-indigo-600 text-white shadow-md border-indigo-600" onclick="switchTab('list')">
                 <i class="fas fa-book-open mr-1"></i> フレーズ集
             </button>
-            <button id="tab-quiz" class="px-4 py-2 sm:px-5 sm:py-2.5 rounded-full text-sm font-semibold transition-all duration-200 border bg-white text-indigo-600 hover:bg-indigo-50 shadow-sm border-transparent" onclick="switchTab('quiz')">
-                <i class="fas fa-gamepad mr-1"></i> クイズに挑戦
+            <button id="tab-quiz" class="px-3 py-2 sm:px-4 sm:py-2 rounded-full text-xs sm:text-sm font-bold transition-all border whitespace-nowrap bg-white text-indigo-600 hover:bg-indigo-50 shadow-sm border-transparent" onclick="switchTab('quiz')">
+                <i class="fas fa-keyboard mr-1"></i> タイピング
             </button>
-            <button id="tab-wh" class="px-4 py-2 sm:px-5 sm:py-2.5 rounded-full text-sm font-semibold transition-all duration-200 border bg-white text-orange-500 hover:bg-orange-50 shadow-sm border-orange-100" onclick="switchTab('wh')">
-                <i class="fas fa-meteor mr-1"></i> 疑問詞特訓 <span class="text-[10px] bg-orange-100 text-orange-600 px-1.5 rounded ml-1 animate-pulse">NEW</span>
+            <button id="tab-shoot" class="px-3 py-2 sm:px-4 sm:py-2 rounded-full text-xs sm:text-sm font-bold transition-all border whitespace-nowrap bg-white text-teal-600 hover:bg-teal-50 shadow-sm border-transparent" onclick="switchTab('shoot')">
+                <i class="fas fa-crosshairs mr-1"></i> スナイパー <span class="text-[9px] bg-teal-100 text-teal-700 px-1 rounded ml-0.5 animate-pulse">NEW</span>
             </button>
-            <button id="tab-admin" class="px-4 py-2 sm:px-5 sm:py-2.5 rounded-full text-sm font-semibold transition-all duration-200 border bg-gray-100 text-gray-600 hover:bg-gray-200 shadow-sm border-transparent" onclick="switchTab('admin')">
-                <i class="fas fa-cog mr-1"></i> 管理 <span class="hidden sm:inline"></span>
+            <button id="tab-wh" class="px-3 py-2 sm:px-4 sm:py-2 rounded-full text-xs sm:text-sm font-bold transition-all border whitespace-nowrap bg-white text-orange-500 hover:bg-orange-50 shadow-sm border-transparent" onclick="switchTab('wh')">
+                <i class="fas fa-meteor mr-1"></i> 疑問詞特訓
+            </button>
+            <button id="tab-admin" class="px-3 py-2 sm:px-4 sm:py-2 rounded-full text-xs sm:text-sm font-bold transition-all border whitespace-nowrap bg-gray-100 text-gray-600 hover:bg-gray-200 shadow-sm border-transparent" onclick="switchTab('admin')">
+                <i class="fas fa-cog"></i> 管理
             </button>
         </nav>
 
-        <!-- メインコンテンツ -->
-        <main id="main-panel" class="glass-panel rounded-2xl shadow-xl flex-1 transition-all border border-white flex flex-col min-h-0 overflow-hidden relative !p-0">
+        <!-- 🌟 メインコンテンツ (ここだけスクロールする) -->
+        <main id="main-panel" class="glass-panel rounded-2xl shadow-xl p-3 sm:p-6 flex-1 overflow-y-auto transition-all border border-white relative">
             
-            <!-- フレーズ一覧ビュー -->
-            <div id="view-list" class="fade-in flex flex-col h-full">
-                <!-- 固定ヘッダー部分 -->
-                <div class="flex-none p-4 sm:p-8 pb-0 sm:pb-0">
-                    <div class="flex justify-between items-center border-b-2 border-indigo-100 pb-2 mb-2 sm:mb-4">
-                        <h2 class="text-lg font-bold text-indigo-900">ストック一覧</h2>
-                        <!-- 一斉切り替えボタン -->
-                        <button id="toggle-all-btn" onclick="toggleAllMask()" class="text-xs sm:text-sm px-3 py-1.5 sm:px-4 sm:py-2 bg-white text-indigo-600 rounded-full hover:bg-indigo-50 transition-colors border border-indigo-200 shadow-sm font-bold flex items-center gap-1 group">
-                            <i class="fas fa-eye text-indigo-400 group-hover:text-indigo-600 transition-colors"></i> <span>全表示</span>
-                        </button>
-                    </div>
-                    <div class="text-[10px] sm:text-xs text-gray-500 text-right mb-2"><i class="fas fa-hand-pointer mr-1"></i>各英語フレーズをタップして個別に隠すことができます</div>
+            <!-- ==============================
+                 1. フレーズ一覧ビュー
+            ============================== -->
+            <div id="view-list" class="fade-in pb-10">
+                <div class="flex justify-between items-center border-b-2 border-indigo-100 pb-2 mb-4 sticky top-0 bg-white/90 backdrop-blur z-10 pt-2 -mt-2">
+                    <h2 class="text-lg font-bold text-indigo-900">ストック一覧</h2>
+                    <button onclick="toggleGlobalMask()" class="text-xs sm:text-sm bg-indigo-100 text-indigo-700 hover:bg-indigo-200 px-3 py-1.5 rounded-lg font-bold transition-colors shadow-sm">
+                        表示一括切替 <i class="fas fa-eye ml-1"></i>
+                    </button>
                 </div>
-                
-                <!-- スクロール可能なリストエリア -->
-                <div id="phrase-list-container" class="space-y-4 overflow-y-auto flex-1 p-4 sm:p-8 pt-0 sm:pt-0 pb-6 custom-scrollbar">
+                <div class="text-xs text-gray-500 mb-3 text-right"><i class="fas fa-info-circle"></i> 英語フレーズをタップして隠せます</div>
+                <div id="phrase-list-container" class="space-y-4">
                     <!-- JavaScriptでカードが生成されます -->
                 </div>
             </div>
 
-            <!-- クイズビュー -->
-            <div id="view-quiz" class="hidden fade-in text-center h-full overflow-y-auto p-4 sm:p-8 custom-scrollbar">
+            <!-- ==============================
+                 2. クイズ（タイピング）ビュー
+            ============================== -->
+            <div id="view-quiz" class="hidden fade-in text-center pb-10">
                 
                 <!-- クイズ設定画面 -->
-                <div id="quiz-setup" class="space-y-6 py-8">
+                <div id="quiz-setup" class="space-y-6 py-4">
                     <h2 class="text-xl sm:text-2xl font-bold text-gray-800">クイズの形式を選んでください</h2>
                     <div class="flex flex-col sm:flex-row justify-center gap-4 mt-6">
                         <button onclick="startQuiz('en2ja')" class="px-4 py-4 bg-indigo-500 hover:bg-indigo-600 text-white rounded-xl shadow-md transition-transform hover:scale-105 active:scale-95 font-bold">
@@ -237,32 +273,24 @@
                         <i class="fas fa-list sm:mr-1"></i><span class="hidden sm:inline"> フレーズ集に戻る</span>
                     </button>
                     
-                    <!-- 🥊 格闘ゲーム風 HPバー＆キャラ UI -->
+                    <!-- バトルUI -->
                     <div id="battle-ui" class="w-full hidden flex-col mb-4 bg-gray-800 p-3 pb-0 rounded-xl shadow-lg border-2 border-gray-700 overflow-hidden relative mt-8 sm:mt-0">
-                        <!-- HP情報 -->
                         <div class="flex justify-between items-end mb-1 px-1 relative z-10">
                             <div class="font-bold text-blue-400 text-sm tracking-wider"><i class="fas fa-user-ninja mr-1"></i> YOU</div>
                             <div class="font-black text-yellow-400 italic text-xl px-2 text-shadow" style="text-shadow: 2px 2px 0 #000;">VS</div>
                             <div class="font-bold text-red-400 text-sm tracking-wider"><span id="enemy-name">ENEMY 1</span> <i class="fas fa-skull ml-1"></i></div>
                         </div>
                         <div class="flex justify-between items-center space-x-2 relative z-10">
-                            <!-- Player HP -->
                             <div class="w-5/12 bg-gray-900 rounded-full h-3 sm:h-4 shadow-inner overflow-hidden border border-gray-600">
                                 <div id="player-hp-bar" class="bg-gradient-to-r from-blue-400 to-blue-600 h-full transition-all duration-300 w-full" style="width: 100%"></div>
                             </div>
-                            <!-- Enemy HP -->
                             <div class="w-5/12 bg-gray-900 rounded-full h-3 sm:h-4 shadow-inner overflow-hidden border border-gray-600 flex justify-end">
                                 <div id="enemy-hp-bar" class="bg-gradient-to-l from-red-400 to-red-600 h-full transition-all duration-200 w-full" style="width: 100%"></div>
                             </div>
                         </div>
-
-                        <!-- キャラクターアクションエリア -->
                         <div class="flex justify-between items-end mt-4 px-6 sm:px-16 h-20 sm:h-24 relative select-none">
                             <div id="player-char" class="text-6xl sm:text-7xl z-10 origin-bottom filter drop-shadow-md">🥷</div>
-                            
-                            <!-- 中央に発生するヒットエフェクト -->
                             <div id="hit-effect" class="absolute left-1/2 top-1/2 transform -translate-x-1/2 -translate-y-1/2 text-5xl hidden z-20 pointer-events-none">💥</div>
-                            
                             <div id="enemy-char" class="text-6xl sm:text-7xl z-10 origin-bottom transform -scale-x-100 filter drop-shadow-md">👹</div>
                         </div>
                     </div>
@@ -280,25 +308,20 @@
                     </div>
 
                     <div id="options-container" class="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4 w-full">
-                        <!-- 選択肢ボタンが生成されます -->
+                        <!-- 選択肢ボタン生成 -->
                     </div>
 
                     <!-- タイピング入力エリア -->
                     <div id="typing-container" class="hidden w-full flex-col items-center space-y-6">
                         <p class="text-sm text-gray-500 bg-gray-100 px-4 py-1 rounded-full"><i class="fas fa-keyboard mr-1"></i> 下線をタップして入力開始</p>
                         
-                        <!-- 直接入力風UI -->
                         <div id="typing-display" class="flex flex-wrap justify-center items-end gap-x-4 gap-y-4 cursor-text bg-white p-6 rounded-xl border-2 border-dashed border-gray-300 w-full hover:bg-gray-50 transition-colors min-h-[100px]" onclick="document.getElementById('hidden-typing-input').focus()">
-                            <!-- JSで文字枠が生成されます -->
+                            <!-- 文字枠生成 -->
                         </div>
-                        
-                        <!-- 隠しインプット (スマホキーボード呼び出し用) -->
                         <input type="text" id="hidden-typing-input" class="opacity-0 absolute -z-10" autocomplete="off" spellcheck="false" autocorrect="off" autocapitalize="none" oninput="handleTypingInput()">
                     </div>
 
                     <div id="feedback-message" class="mt-6 text-xl font-bold h-8 transition-all flex items-center justify-center w-full"></div>
-                    
-                    <!-- カウントダウンメッセージ -->
                     <div id="auto-next-msg" class="text-gray-400 font-bold mt-2 h-6 text-sm hidden text-center"></div>
 
                     <div class="flex gap-4 mt-4 w-full sm:w-auto">
@@ -322,95 +345,140 @@
                             <p class="text-4xl font-bold"><span id="average-time" class="text-orange-500 text-5xl">0.0</span> <span class="text-2xl text-orange-400">秒</span></p>
                         </div>
                     </div>
-
-                    <div>
-                        <button onclick="resetQuiz()" class="px-8 py-3 bg-indigo-500 text-white rounded-full font-bold shadow hover:bg-indigo-600 transition-colors">
-                            <i class="fas fa-redo mr-2"></i> もう一度プレイ
-                        </button>
-                    </div>
+                    <button onclick="resetQuiz()" class="px-8 py-3 bg-indigo-500 text-white rounded-full font-bold shadow hover:bg-indigo-600 transition-colors">
+                        <i class="fas fa-redo mr-2"></i> もう一度プレイ
+                    </button>
                 </div>
             </div>
 
-            <!-- 🔥 疑問詞特訓ビュー (落ちものゲーム) -->
-            <div id="view-wh" class="hidden fade-in relative h-full overflow-y-auto p-4 sm:p-8 custom-scrollbar">
+            <!-- ==============================
+                 3. 新ゲーム：ワード・スナイパー (穴埋めシューティング)
+            ============================== -->
+            <div id="view-shoot" class="hidden fade-in relative h-full flex flex-col pb-4">
                 
-                <!-- 特訓セットアップ画面 -->
-                <div id="wh-setup" class="text-center py-8">
-                    <h2 class="text-2xl sm:text-3xl font-black text-indigo-900 mb-4 tracking-tight"><i class="fas fa-meteor text-orange-500 mr-2"></i>疑問詞スピード仕分け！</h2>
-                    <p class="text-gray-600 mb-6 max-w-md mx-auto text-sm sm:text-base leading-relaxed">
-                        上から降ってくる日本語に合わせて、正しい疑問詞ボタンをタップしよう！<br>
-                        間違えるとスコアが減り、<span class="text-red-500 font-bold">スコアが0点になるとゲームオーバー</span>になるぞ！<br>
-                        さらに<span class="text-red-500 font-bold">連続でお手つきするとボタンが一時ロック</span>されるので注意！
+                <!-- セットアップ画面 -->
+                <div id="shoot-setup" class="text-center py-8">
+                    <h2 class="text-2xl sm:text-3xl font-black text-teal-700 mb-4 tracking-tight"><i class="fas fa-crosshairs text-red-500 mr-2"></i>ワード・スナイパー</h2>
+                    <p class="text-gray-600 mb-6 text-sm sm:text-base leading-relaxed max-w-sm mx-auto">
+                        英文の「虫食い」に入る正しい単語を持った敵を、迫り来る前に素早く撃ち抜け！<br>
+                        間違えたり逃がしたりするとダメージを受けるぞ！<br>
+                        <span class="text-teal-600 font-bold">正解を続けると徐々にレベルとスピードが上がっていくサバイバルモードだ！</span>
                     </p>
-                    
-                    <h3 class="font-bold text-gray-700 mb-4">レベル（速さ）を選んでスタート！</h3>
-                    <div class="flex flex-col sm:flex-row justify-center gap-4 px-4">
-                        <button onclick="startWhGame(1)" class="px-6 py-4 bg-green-500 hover:bg-green-600 text-white font-bold rounded-xl shadow-md transition-transform hover:scale-105 active:scale-95 text-lg w-full sm:w-auto">
-                            Lv.1 <span class="block text-xs mt-1 font-normal">おそい</span>
-                        </button>
-                        <button onclick="startWhGame(2)" class="px-6 py-4 bg-orange-500 hover:bg-orange-600 text-white font-bold rounded-xl shadow-md transition-transform hover:scale-105 active:scale-95 text-lg w-full sm:w-auto">
-                            Lv.2 <span class="block text-xs mt-1 font-normal">ふつう</span>
-                        </button>
-                        <button onclick="startWhGame(3)" class="px-6 py-4 bg-red-500 hover:bg-red-600 text-white font-bold rounded-xl shadow-md transition-transform hover:scale-105 active:scale-95 text-lg w-full sm:w-auto">
-                            Lv.3 <span class="block text-xs mt-1 font-normal">はやい</span>
+                    <div class="flex justify-center mt-6">
+                        <button onclick="startShootGame()" class="px-10 py-4 bg-teal-500 hover:bg-teal-600 text-white font-bold rounded-full shadow-lg transition-transform hover:scale-105 active:scale-95 text-xl">
+                            ゲームスタート
                         </button>
                     </div>
                 </div>
 
-                <!-- 特訓プレイ画面 -->
-                <div id="wh-play" class="hidden flex-col items-center">
-                    <div class="w-full relative overflow-hidden bg-slate-800 rounded-2xl shadow-inner flex flex-col h-[480px] sm:h-[550px] border-4 border-slate-700 transition-colors">
-                        
-                        <!-- ヘッダー -->
+                <!-- プレイ画面 -->
+                <div id="shoot-play" class="hidden flex-col flex-1 h-full w-full relative min-h-[400px]">
+                    <!-- ヘッダーUI -->
+                    <div class="flex justify-between items-center bg-slate-800 text-white p-2 rounded-t-xl z-20 relative shadow-md">
+                        <div class="flex items-center w-1/3 gap-2">
+                            <button onclick="endShootGame(true); resetShootGame();" class="text-gray-300 hover:text-white" title="スタート画面に戻る"><i class="fas fa-arrow-left"></i></button>
+                            <div class="flex flex-col w-full">
+                                <span class="text-[10px] font-bold text-teal-300">YOU (HP)</span>
+                                <div class="h-2 bg-gray-700 rounded-full overflow-hidden border border-gray-600">
+                                    <div id="shoot-hp-bar" class="h-full bg-teal-400 transition-all" style="width: 100%;"></div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="text-center w-1/3">
+                            <div class="text-[10px] font-bold text-gray-300">Lv: <span id="shoot-level-display" class="text-xs text-white">1</span> | SCORE</div>
+                            <div class="font-black text-lg text-yellow-300 leading-none" id="shoot-score">0</div>
+                        </div>
+                        <div class="w-1/3 text-right flex flex-col items-end">
+                            <button onclick="endShootGame(true); switchTab('list');" class="text-gray-300 hover:text-white px-2" title="やめる"><i class="fas fa-times"></i></button>
+                            <div class="mt-1 flex items-center justify-end w-full pr-1">
+                                <span class="text-[10px] font-bold text-gray-300 mr-1">AMMO:</span>
+                                <div id="shoot-ammo-display" class="text-xs tracking-tighter">⚔️⚔️⚔️</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- 問題表示エリア -->
+                    <div class="bg-white p-4 border-b-4 border-teal-100 text-center z-20 shadow-sm relative">
+                        <div class="text-xs text-gray-500 font-bold mb-1" id="shoot-ja">日本語の意味</div>
+                        <div class="text-lg sm:text-xl font-bold text-gray-800 tracking-wide" id="shoot-en">
+                            How <span class="bg-yellow-200 text-yellow-800 px-3 py-1 rounded mx-1">[ ? ]</span> you like it today?
+                        </div>
+                    </div>
+
+                    <!-- 射撃エリア -->
+                    <div id="shoot-area" class="flex-1 bg-slate-900 relative overflow-hidden rounded-b-xl border-4 border-slate-700 cursor-crosshair" onpointerdown="clickShootArea(event)">
+                        <!-- JSで敵が生成される -->
+                        <div class="absolute left-1/2 bottom-0 transform -translate-x-1/2 text-5xl sm:text-6xl z-30 pointer-events-none drop-shadow-xl" id="shoot-player-char">🥷</div>
+                    </div>
+                </div>
+
+                <!-- 結果画面 -->
+                <div id="shoot-result" class="hidden py-8 text-center">
+                    <h2 class="text-3xl font-black mb-2 text-red-600" id="shoot-result-title">GAME OVER</h2>
+                    <div class="text-5xl mb-4" id="shoot-result-emoji">💥</div>
+                    <div class="bg-slate-100 px-8 py-4 rounded-xl max-w-xs mx-auto mb-6 border border-slate-200">
+                        <p class="text-sm text-slate-500 font-bold">スナイパースコア</p>
+                        <p class="text-4xl font-black text-teal-600"><span id="shoot-final-score">0</span> <span class="text-lg text-teal-500">pts</span></p>
+                        <p class="text-sm font-bold text-teal-500 mt-3 bg-teal-100 py-1 rounded">到達レベル: <span id="shoot-final-level" class="text-lg">1</span></p>
+                    </div>
+                    <button onclick="resetShootGame()" class="px-8 py-3 bg-teal-500 text-white rounded-full font-bold shadow hover:bg-teal-600">
+                        <i class="fas fa-redo mr-1"></i> もう一度挑む
+                    </button>
+                </div>
+            </div>
+
+            <!-- ==============================
+                 4. 疑問詞特訓ビュー (落ちもの)
+            ============================== -->
+            <div id="view-wh" class="hidden fade-in relative h-full flex flex-col pb-4">
+                
+                <div id="wh-setup" class="text-center py-8">
+                    <h2 class="text-xl sm:text-2xl font-black text-indigo-900 mb-4 tracking-tight"><i class="fas fa-meteor text-orange-500 mr-2"></i>疑問詞スピード仕分け！</h2>
+                    <p class="text-gray-600 mb-8 max-w-md mx-auto text-sm sm:text-base leading-relaxed">
+                        上から降ってくる日本語に合わせて、正しい疑問詞ボタンをタップしよう！<br>
+                        下まで落ちたり、間違えすぎるとライフが減るぞ！
+                    </p>
+                    <button onclick="startWhGame()" class="px-10 py-4 bg-orange-500 hover:bg-orange-600 text-white font-bold rounded-full shadow-lg transition-transform hover:scale-105 active:scale-95 text-xl">
+                        ゲームスタート
+                    </button>
+                </div>
+
+                <div id="wh-play" class="hidden flex-col items-center flex-1 h-full w-full relative min-h-[400px]">
+                    <div class="w-full relative overflow-hidden bg-slate-800 rounded-2xl shadow-inner flex flex-col h-full border-4 border-slate-700 transition-colors">
                         <div class="flex justify-between items-center p-3 bg-slate-900/80 backdrop-blur-sm z-20 w-full text-white shadow-md">
                             <div class="font-bold text-orange-400">Lv: <span id="wh-level" class="text-xl">1</span></div>
-                            <div class="font-black text-xl tracking-wider">SCORE: <span id="wh-score">20</span></div>
+                            <div class="font-black text-xl tracking-wider">SCORE: <span id="wh-score">0</span></div>
                             <div class="text-lg tracking-widest" id="wh-life">❤️❤️❤️</div>
                         </div>
-                        
-                        <!-- 落下エリア -->
-                        <div id="wh-falling-area" class="flex-1 relative w-full z-10">
-                            <!-- JSでカードが生成されます -->
+                        <div id="wh-falling-area" class="flex-1 relative w-full z-10"></div>
+                        <div class="grid grid-cols-3 gap-2 sm:gap-3 p-3 sm:p-4 bg-slate-900/95 backdrop-blur-md relative z-20 w-full border-t-2 border-slate-700">
+                            <button onclick="whCheck('What')" class="bg-blue-600 hover:bg-blue-500 text-white font-black py-4 rounded-xl shadow-[0_4px_0_rgb(30,58,138)] active:shadow-none active:translate-y-1 transition-all text-lg sm:text-xl">What</button>
+                            <button onclick="whCheck('How')" class="bg-green-600 hover:bg-green-500 text-white font-black py-4 rounded-xl shadow-[0_4px_0_rgb(20,83,45)] active:shadow-none active:translate-y-1 transition-all text-lg sm:text-xl">How</button>
+                            <button onclick="whCheck('Where')" class="bg-red-600 hover:bg-red-500 text-white font-black py-4 rounded-xl shadow-[0_4px_0_rgb(153,27,27)] active:shadow-none active:translate-y-1 transition-all text-lg sm:text-xl">Where</button>
+                            <button onclick="whCheck('When')" class="bg-yellow-500 hover:bg-yellow-400 text-white font-black py-4 rounded-xl shadow-[0_4px_0_rgb(161,98,7)] active:shadow-none active:translate-y-1 transition-all text-lg sm:text-xl">When</button>
+                            <button onclick="whCheck('Who')" class="bg-purple-600 hover:bg-purple-500 text-white font-black py-4 rounded-xl shadow-[0_4px_0_rgb(88,28,135)] active:shadow-none active:translate-y-1 transition-all text-lg sm:text-xl">Who</button>
+                            <button onclick="whCheck('Why')" class="bg-pink-600 hover:bg-pink-500 text-white font-black py-4 rounded-xl shadow-[0_4px_0_rgb(157,23,77)] active:shadow-none active:translate-y-1 transition-all text-lg sm:text-xl">Why</button>
                         </div>
-
-                        <!-- 仕分けボタン群 (連打ロック時に pointer-events-none になる) -->
-                        <div id="wh-buttons-container" class="grid grid-cols-3 gap-2 sm:gap-3 p-3 sm:p-4 bg-slate-900/95 backdrop-blur-md relative z-20 w-full border-t-2 border-slate-700 transition-opacity duration-200">
-                            <button onclick="whCheck('What', this)" class="wh-btn bg-blue-600 hover:bg-blue-500 text-white font-black py-4 rounded-xl shadow-[0_4px_0_rgb(30,58,138)] active:shadow-none active:translate-y-1 transition-all text-lg sm:text-xl">What</button>
-                            <button onclick="whCheck('How', this)" class="wh-btn bg-green-600 hover:bg-green-500 text-white font-black py-4 rounded-xl shadow-[0_4px_0_rgb(20,83,45)] active:shadow-none active:translate-y-1 transition-all text-lg sm:text-xl">How</button>
-                            <button onclick="whCheck('Where', this)" class="wh-btn bg-red-600 hover:bg-red-500 text-white font-black py-4 rounded-xl shadow-[0_4px_0_rgb(153,27,27)] active:shadow-none active:translate-y-1 transition-all text-lg sm:text-xl">Where</button>
-                            <button onclick="whCheck('When', this)" class="wh-btn bg-yellow-500 hover:bg-yellow-400 text-white font-black py-4 rounded-xl shadow-[0_4px_0_rgb(161,98,7)] active:shadow-none active:translate-y-1 transition-all text-lg sm:text-xl">When</button>
-                            <button onclick="whCheck('Who', this)" class="wh-btn bg-purple-600 hover:bg-purple-500 text-white font-black py-4 rounded-xl shadow-[0_4px_0_rgb(88,28,135)] active:shadow-none active:translate-y-1 transition-all text-lg sm:text-xl">Who</button>
-                            <button onclick="whCheck('Why', this)" class="wh-btn bg-pink-600 hover:bg-pink-500 text-white font-black py-4 rounded-xl shadow-[0_4px_0_rgb(157,23,77)] active:shadow-none active:translate-y-1 transition-all text-lg sm:text-xl">Why</button>
-                        </div>
-                        
-                        <!-- 終了ボタン -->
-                        <button onclick="endWhGame(true); switchTab('list');" class="absolute top-14 right-2 p-2 bg-white/10 hover:bg-white/20 text-white rounded-full z-30 shadow transition-colors w-10 h-10 flex items-center justify-center" title="やめる">
-                            <i class="fas fa-times"></i>
-                        </button>
+                        <button onclick="endWhGame(true); switchTab('list');" class="absolute top-14 right-2 p-2 bg-white/10 hover:bg-white/20 text-white rounded-full z-30 shadow w-10 h-10 flex items-center justify-center" title="やめる"><i class="fas fa-times"></i></button>
                     </div>
                 </div>
 
-                <!-- 特訓結果画面 -->
                 <div id="wh-result" class="hidden py-8 text-center">
                     <h2 class="text-3xl sm:text-4xl font-black mb-4 text-red-600 tracking-wider">GAME OVER</h2>
                     <div class="text-6xl mb-6">💥</div>
-                    
                     <div class="bg-slate-100 px-12 py-6 rounded-2xl w-full sm:max-w-md shadow-inner mx-auto mb-8 border border-slate-200">
                         <p class="text-lg text-slate-500 font-bold mb-2">最終スコア</p>
                         <p class="text-5xl font-black text-slate-800"><span id="wh-final-score">0</span> <span class="text-2xl text-slate-500">pts</span></p>
                         <p class="text-sm font-bold text-orange-500 mt-3 bg-orange-100 py-1 rounded">到達レベル: <span id="wh-final-level" class="text-lg">1</span></p>
                     </div>
-
-                    <div class="flex flex-col sm:flex-row justify-center gap-4">
-                        <button onclick="resetWhGame()" class="px-8 py-3 bg-orange-500 text-white rounded-full font-bold shadow-lg hover:bg-orange-600 transition-colors">
-                            <i class="fas fa-redo mr-2"></i> もう一度挑戦（レベル選択へ）
-                        </button>
-                    </div>
+                    <button onclick="resetWhGame()" class="px-8 py-3 bg-orange-500 text-white rounded-full font-bold shadow-lg hover:bg-orange-600">もう一度挑戦</button>
                 </div>
             </div>
 
-            <!-- 管理ビュー (教師用疑似エディタ) -->
-            <div id="view-admin" class="hidden fade-in h-full overflow-y-auto p-4 sm:p-8 custom-scrollbar">
+            <!-- ==============================
+                 5. 管理ビュー (教師用疑似エディタ)
+            ============================== -->
+            <div id="view-admin" class="hidden fade-in pb-10">
                 <div class="bg-indigo-50 border border-indigo-200 rounded-xl p-5 sm:p-6 mb-8 text-center shadow-inner relative overflow-hidden">
                     <div class="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-indigo-500 to-purple-500"></div>
                     <h2 class="text-xl font-bold text-indigo-900 mb-2"><i class="fas fa-magic mr-2"></i>アプリに問題を反映する</h2>
@@ -425,30 +493,26 @@
                 </div>
 
                 <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                    <!-- 新規追加フォーム -->
                     <div class="bg-white p-5 border border-gray-200 rounded-xl shadow-sm h-fit">
                         <h3 class="font-bold text-gray-800 border-b pb-2 mb-4 text-sm"><i class="fas fa-plus-circle text-teal-500 mr-1"></i> 新しいフレーズを追加</h3>
                         <div class="space-y-4">
                             <div>
                                 <label class="block text-xs font-bold text-gray-600 mb-1">英語フレーズ <span class="text-red-500">*</span></label>
-                                <input type="text" id="add-en" class="w-full p-2 border border-gray-300 rounded focus:ring-2 focus:ring-teal-300 outline-none text-sm" placeholder="例: Thank you for waiting.">
+                                <input type="text" id="add-en" class="w-full p-2 border border-gray-300 rounded outline-none text-sm" placeholder="例: Thank you for waiting.">
                             </div>
                             <div>
                                 <label class="block text-xs font-bold text-gray-600 mb-1">日本語の意味 <span class="text-red-500">*</span></label>
-                                <input type="text" id="add-ja" class="w-full p-2 border border-gray-300 rounded focus:ring-2 focus:ring-teal-300 outline-none text-sm" placeholder="例: お待たせいたしました。">
+                                <input type="text" id="add-ja" class="w-full p-2 border border-gray-300 rounded outline-none text-sm" placeholder="例: お待たせいたしました。">
                             </div>
                             <div>
                                 <label class="block text-xs font-bold text-gray-600 mb-1">読み方 (任意)</label>
-                                <input type="text" id="add-reading" class="w-full p-2 border border-gray-300 rounded focus:ring-2 focus:ring-teal-300 outline-none text-sm" placeholder="例: サンキュー フォー ウェイティング">
+                                <input type="text" id="add-reading" class="w-full p-2 border border-gray-300 rounded outline-none text-sm" placeholder="例: サンキュー フォー ウェイティング">
                             </div>
-                            <button onclick="addPhrase()" class="w-full py-2 bg-teal-500 hover:bg-teal-600 text-white font-bold rounded shadow transition-colors mt-2">
-                                リストに追加する
-                            </button>
+                            <button onclick="addPhrase()" class="w-full py-2 bg-teal-500 hover:bg-teal-600 text-white font-bold rounded shadow transition-colors mt-2">リストに追加する</button>
                             <p id="add-msg" class="text-sm font-bold text-center h-5"></p>
                         </div>
                     </div>
 
-                    <!-- 登録済みリスト -->
                     <div class="bg-white p-5 border border-gray-200 rounded-xl shadow-sm">
                         <h3 class="font-bold text-gray-800 border-b pb-2 mb-4 text-sm"><i class="fas fa-list text-indigo-500 mr-1"></i> 登録済みデータ一覧</h3>
                         <div id="admin-list-container" class="space-y-2 max-h-[350px] overflow-y-auto pr-2">
@@ -464,7 +528,19 @@
     <!-- 💡 アプリのデータと動作ロジック -->
     <script>
         // ==========================================
-        // 📚 疑問詞特訓用 データ (固定30問)
+        // ユーティリティ関数
+        // ==========================================
+        function shuffleArray(array) {
+            const newArr = [...array];
+            for (let i = newArr.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [newArr[i], newArr[j]] = [newArr[j], newArr[i]];
+            }
+            return newArr;
+        }
+
+        // ==========================================
+        // 📚 疑問詞特訓用 データ (固定)
         // ==========================================
         const whData = [
             { "ja": "お名前は何ですか？", "en": "[ ? ] is your name?", "ans": "What" },
@@ -482,23 +558,8 @@
             { "ja": "いつ日本に来ましたか？", "en": "[ ? ] did you come to Japan?", "ans": "When" },
             { "ja": "あなたの好きな歌手は誰？", "en": "[ ? ] is your favorite singer?", "ans": "Who" },
             { "ja": "駅はどこですか？", "en": "[ ? ] is the station?", "ans": "Where" },
-            
-            // 追加15問
-            { "ja": "いつも何時に起きますか？", "en": "[ ? ] time do you usually get up?", "ans": "What" },
-            { "ja": "どちら様ですか？", "en": "[ ? ] is calling, please?", "ans": "Who" },
-            { "ja": "どうやってその汚れを落としましたか？", "en": "[ ? ] did you remove that stain?", "ans": "How" },
-            { "ja": "あなたのバッグはどれですか？", "en": "[ ? ] is your bag? (※What/How/Which代用で今回はWhat)", "ans": "What" },
-            { "ja": "なぜ昨日は休んだのですか？", "en": "[ ? ] were you absent yesterday?", "ans": "Why" },
-            { "ja": "美容室にはどのくらいの頻度で来ますか？", "en": "[ ? ] often do you visit the hair salon?", "ans": "How" },
-            { "ja": "受付はどこにありますか？", "en": "[ ? ] is the reception desk?", "ans": "Where" },
-            { "ja": "最後に髪を切ったのはいつですか？", "en": "[ ? ] was the last time you cut your hair?", "ans": "When" },
-            { "ja": "本日の担当スタイリストは誰ですか？", "en": "[ ? ] is your hair stylist today?", "ans": "Who" },
-            { "ja": "お湯の温度はいかがですか？", "en": "[ ? ] is the water temperature?", "ans": "How" },
-            { "ja": "お探しのヘアケア商品は何ですか？", "en": "[ ? ] hair care product are you looking for?", "ans": "What" },
-            { "ja": "お支払いはどのようになさいますか？", "en": "[ ? ] would you like to pay?", "ans": "How" },
-            { "ja": "荷物はどこに置けばいいですか？", "en": "[ ? ] should I put my luggage?", "ans": "Where" },
-            { "ja": "なぜ髪を染めたいのですか？", "en": "[ ? ] do you want to dye your hair?", "ans": "Why" },
-            { "ja": "予約の確認が取れるのはいつですか？", "en": "[ ? ] can we confirm the reservation?", "ans": "When" }
+            { "ja": "お湯の加減はいかがですか？", "en": "[ ? ] is the water temperature?", "ans": "How" },
+            { "ja": "どのくらい頻繁に髪を切りますか？", "en": "[ ? ] often do you cut your hair?", "ans": "How" }
         ];
 
         // ==========================================
@@ -512,23 +573,9 @@
                 "reading": "ハイ. メイ アイ ヘルプ ユー？",
                 "meaning": "いらっしゃいませ！",
                 "dialogues": [
-                    {
-                        "speaker": "美容師",
-                        "en": "Hi! May I help you?",
-                        "ja": "こんにちは！いらっしゃいませ。（ご予約の方ですか？）"
-                    },
-                    {
-                        "speaker": "お客様",
-                        "en": "Hi. I have a reservation at 2:00. My name is Kimura.",
-                        "reading": "ハイ。アイ ハヴ ア レザヴェイション アッ トゥー。マイ ネイム イズ キムラ",
-                        "ja": "こんにちは。2時に予約している木村です。"
-                    },
-                    {
-                        "speaker": "美容師",
-                        "en": "Yes, Mr. Kimura. This way, please.",
-                        "reading": "イエス、ミスター キムラ。ディス ウェイ プリーズ",
-                        "ja": "はい、木村様ですね。こちらへどうぞ。"
-                    }
+                    { "speaker": "美容師", "en": "Hi! May I help you?", "ja": "こんにちは！いらっしゃいませ。（ご予約の方ですか？）" },
+                    { "speaker": "お客様", "en": "Hi. I have a reservation at 2:00. My name is Kimura.", "ja": "こんにちは。2時に予約している木村です。" },
+                    { "speaker": "美容師", "en": "Yes, Mr. Kimura. This way, please.", "ja": "はい、木村様ですね。こちらへどうぞ。" }
                 ]
             },
             {
@@ -537,23 +584,9 @@
                 "reading": "ハウ ウッジュ― ライキットゥデイ？",
                 "meaning": "今日はどうされますか？",
                 "dialogues": [
-                    {
-                        "speaker": "美容師",
-                        "en": "Please have a seat.",
-                        "reading": "プリーズ ハヴ ア スィート",
-                        "ja": "座ってください。"
-                    },
-                    {
-                        "speaker": "お客様",
-                        "en": "Thank you.",
-                        "ja": "ありがとうございます。"
-                    },
-                    {
-                        "speaker": "美容師",
-                        "en": "How would you like it today?",
-                        "reading": "ハウ ウッジュ― ライキッ トゥデイ？",
-                        "ja": "今日はどうされますか？"
-                    }
+                    { "speaker": "美容師", "en": "Please have a seat.", "ja": "座ってください。" },
+                    { "speaker": "お客様", "en": "Thank you.", "ja": "ありがとうございます。" },
+                    { "speaker": "美容師", "en": "How would you like it today?", "ja": "今日はどうされますか？" }
                 ]
             },
             {
@@ -562,22 +595,9 @@
                 "reading": "ハウ ハヴュー ビーン？",
                 "meaning": "最近どうでしたか？",
                 "dialogues": [
-                    {
-                        "speaker": "美容師",
-                        "en": "How have you been?",
-                        "ja": "最近どうでしたか？"
-                    },
-                    {
-                        "speaker": "お客様",
-                        "en": "I've been good, thank you. A bit busy with work, though.",
-                        "ja": "調子いいよ。でも、ちょっと仕事が忙しかったかな。"
-                    },
-                    {
-                        "speaker": "美容師",
-                        "en": "I see. Thanks for coming today.",
-                        "reading": "アイ スィー。 サンクス フォー カミング トゥデイ",
-                        "ja": "そうなんだ。今日は来てくれてありがとう。"
-                    }
+                    { "speaker": "美容師", "en": "How have you been?", "ja": "最近どうでしたか？" },
+                    { "speaker": "お客様", "en": "I've been good, thank you. A bit busy with work, though.", "ja": "調子いいよ。でも、ちょっと仕事が忙しかったかな。" },
+                    { "speaker": "美容師", "en": "I see. Thanks for coming today.", "ja": "そうなんだ。今日は来てくれてありがとう。" }
                 ]
             },
             {
@@ -586,23 +606,9 @@
                 "reading": "ワット ドゥー ユー ドゥー オン ユア デイズ オフ？",
                 "meaning": "休みの日は何をしてるんですか？",
                 "dialogues": [
-                    {
-                        "speaker": "美容師",
-                        "en": "What do you do on your days off?",
-                        "ja": "休みの日は何をしてるんですか？"
-                    },
-                    {
-                        "speaker": "お客様",
-                        "en": "I like watching Netflix.",
-                        "reading": "アイ ライク ウォッチング ネットフリックス",
-                        "ja": "ネットフリックスを見るのが好きですね。"
-                    },
-                    {
-                        "speaker": "美容師",
-                        "en": "Oh, me too! What are you watching?",
-                        "reading": "オー、ミー トゥー！ワット アー ユー ウォッチング？",
-                        "ja": "あ、私もです！何を見ているんですか？"
-                    }
+                    { "speaker": "美容師", "en": "What do you do on your days off?", "ja": "休みの日は何をしてるんですか？" },
+                    { "speaker": "お客様", "en": "I like watching Netflix.", "ja": "ネットフリックスを見るのが好きですね。" },
+                    { "speaker": "美容師", "en": "Oh, me too! What are you watching?", "ja": "あ、私もです！何を見ているんですか？" }
                 ]
             },
             {
@@ -611,106 +617,136 @@
                 "reading": "ハウ ディッド ユー ヒア アバウト アス？",
                 "meaning": "どうやってうちのお店を知ったんですか？",
                 "dialogues": [
-                    {
-                        "speaker": "美容師",
-                        "en": "How did you hear about us?",
-                        "ja": "どうやってうちのお店を知ったんですか？"
-                    },
-                    {
-                        "speaker": "お客様",
-                        "en": "My friend Ken recommended you.",
-                        "reading": "マイ フレンド ケン レコメンディッド ユー",
-                        "ja": "友達のケンが勧めてくれて。"
-                    },
-                    {
-                        "speaker": "美容師",
-                        "en": "Oh, you know Ken! He's a great guy.",
-                        "reading": "オー、ユー ノウ ケン！ヒーズ ア グレイト ガイ",
-                        "ja": "あ、ケンさんをご存知なんですね！彼、すごく良い人ですよね。"
-                    }
+                    { "speaker": "美容師", "en": "How did you hear about us?", "ja": "どうやってうちのお店を知ったんですか？" },
+                    { "speaker": "お客様", "en": "My friend Ken recommended you.", "ja": "友達のケンが勧めてくれて。" },
+                    { "speaker": "美容師", "en": "Oh, you know Ken! He's a great guy.", "ja": "あ、ケンさんをご存知なんですね！彼、すごく良い人ですよね。" }
                 ]
             }
         ];
         // --- DATA_END ---
 
-        // データの初期読み込み
+        // ==========================================
+        // 👁️ マスキング（隠す）機能
+        // ==========================================
+        let globalMaskState = 0; // 0:全表示, 1:頭文字, 2:下線のみ, 3:真っ白
+
+        function getMaskedText(text, state) {
+            if (state === 0) return text;
+            if (state === 3) return `<span class="opacity-0 select-none">${text}</span>`;
+
+            let result = "";
+            let wordStart = true;
+            for (let i = 0; i < text.length; i++) {
+                let c = text[i];
+                if (/[a-zA-Z]/.test(c)) {
+                    if (state === 1 && wordStart) {
+                        result += c; 
+                    } else {
+                        result += "_"; 
+                    }
+                    wordStart = false;
+                } else {
+                    result += c; 
+                    if (c === ' ' || c === '-' || c === "'") {
+                        wordStart = true;
+                    }
+                }
+            }
+            return result.replace(/_+/g, match => `<span class="text-gray-300 font-mono tracking-widest">${match}</span>`);
+        }
+
+        function toggleMask(id) {
+            const elObj = phraseData.find(p => p.id === id);
+            if (!elObj) return;
+            if (typeof elObj.maskState === 'undefined') elObj.maskState = globalMaskState;
+            elObj.maskState = (elObj.maskState + 1) % 4;
+            
+            const enEl = document.getElementById(`phrase-en-${id}`);
+            const readEl = document.getElementById(`phrase-read-${id}`);
+            if (enEl) enEl.innerHTML = getMaskedText(elObj.english, elObj.maskState);
+            if (readEl && elObj.reading) {
+                readEl.innerHTML = elObj.maskState === 0 ? `<i class="fas fa-volume-up opacity-50 mr-1"></i>${elObj.reading}` : `<span class="opacity-0">隠し中</span>`;
+            }
+        }
+
+        function toggleGlobalMask() {
+            globalMaskState = (globalMaskState + 1) % 4;
+            phraseData.forEach(p => p.maskState = globalMaskState);
+            renderPhraseList();
+        }
+
+        // ==========================================
+        // 🎨 UI描画処理 (フレーズ集 & 管理)
+        // ==========================================
         function loadData() {
             renderPhraseList();
             renderAdminList();
         }
 
-        // ==========================================
-        // 👁️ フレーズマスキング機能
-        // ==========================================
-        let maskStates = {}; // { id: state(0~3) }
-        let globalMaskLevel = 0; // 0:全表示, 1:頭文字ヒント, 2:文字数ヒント, 3:ノーヒント
+        function renderPhraseList() {
+            const container = document.getElementById('phrase-list-container');
+            container.innerHTML = '';
 
-        const maskLabels = [
-            { icon: 'fa-eye', text: '全表示' },
-            { icon: 'fa-lightbulb', text: '頭文字ヒント' },
-            { icon: 'fa-comment-dots', text: '文字数ヒント' },
-            { icon: 'fa-eye-slash', text: 'ノーヒント' }
-        ];
-
-        function toggleMask(id) {
-            maskStates[id] = ((maskStates[id] || 0) + 1) % 4;
-            updateMaskDisplay(id);
-        }
-
-        function toggleAllMask() {
-            globalMaskLevel = (globalMaskLevel + 1) % 4;
             phraseData.forEach(item => {
-                maskStates[item.id] = globalMaskLevel;
-                updateMaskDisplay(item.id);
-            });
-            updateToggleAllBtn();
-        }
+                const currentState = typeof item.maskState !== 'undefined' ? item.maskState : globalMaskState;
+                item.maskState = currentState;
 
-        function updateToggleAllBtn() {
-            const btn = document.getElementById('toggle-all-btn');
-            if(!btn) return;
-            const state = maskLabels[globalMaskLevel];
-            btn.innerHTML = `<i class="fas ${state.icon} text-indigo-400 group-hover:text-indigo-600 transition-colors"></i> <span>${state.text}</span>`;
-            
-            if(globalMaskLevel > 0) {
-                btn.classList.add('bg-indigo-100', 'border-indigo-300');
-                btn.classList.remove('bg-white', 'border-indigo-200');
-            } else {
-                btn.classList.remove('bg-indigo-100', 'border-indigo-300');
-                btn.classList.add('bg-white', 'border-indigo-200');
-            }
-        }
-
-        function getMaskedHtml(text, state) {
-            if (state === 0) return text;
-            if (state === 3) return `<span class="opacity-0 select-none">${text}</span>`; // 真っ白（領域は維持）
-            
-            return text.replace(/[a-zA-Z]+/g, (match) => {
-                if (state === 1) {
-                    return `<span class="font-mono tracking-widest text-indigo-400/80">` + match.charAt(0) + '_'.repeat(match.length - 1) + `</span>`;
-                } else if (state === 2) {
-                    return `<span class="font-mono tracking-widest text-indigo-400/80">` + '_'.repeat(match.length) + `</span>`;
+                const card = document.createElement('div');
+                card.className = 'bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden transition-all hover:shadow-md';
+                
+                let dialoguesHTML = '';
+                if(item.dialogues && item.dialogues.length > 0) {
+                    item.dialogues.forEach(d => {
+                        const isStylist = d.speaker === "美容師";
+                        const bubbleColor = isStylist ? 'bg-indigo-50 border-indigo-100' : 'bg-teal-50 border-teal-100';
+                        const alignment = isStylist ? 'pr-6 sm:pr-12' : 'pl-6 sm:pl-12';
+                        const icon = isStylist ? '<i class="fas fa-cut text-indigo-400"></i>' : '<i class="fas fa-user text-teal-400"></i>';
+                        
+                        dialoguesHTML += `
+                            <div class="mb-3 ${alignment}">
+                                <div class="text-[10px] text-gray-500 mb-1 flex items-center ${isStylist ? '' : 'justify-end'} gap-1 font-bold">
+                                    ${isStylist ? icon + ' ' + d.speaker : d.speaker + ' ' + icon}
+                                </div>
+                                <div class="p-3 rounded-xl border ${bubbleColor} inline-block w-full shadow-sm text-xs sm:text-sm">
+                                    <p class="font-bold text-gray-800">${d.en}</p>
+                                    <p class="text-gray-700 mt-2 border-t border-gray-200/50 pt-2">${d.ja}</p>
+                                </div>
+                            </div>
+                        `;
+                    });
+                } else {
+                    dialoguesHTML = '<p class="text-xs text-gray-400 text-center py-4 bg-gray-50 rounded-lg">会話例は登録されていません。</p>';
                 }
+
+                const enHtml = getMaskedText(item.english, currentState);
+                const readHtml = currentState === 0 && item.reading ? `<i class="fas fa-volume-up opacity-50 mr-1"></i>${item.reading}` : (item.reading ? `<span class="opacity-0">隠し中</span>` : '');
+
+                card.innerHTML = `
+                    <div class="p-4 sm:p-5">
+                        <div class="flex flex-col gap-2">
+                            <div class="bg-indigo-100 text-indigo-800 px-3 py-1.5 rounded-lg text-xs font-bold self-start shadow-sm">
+                                ${item.meaning}
+                            </div>
+                            <div class="phrase-mask-target bg-gray-50/50 p-2 rounded-lg border border-transparent hover:border-indigo-200 hover:bg-indigo-50" onclick="toggleMask(${item.id})" title="タップで隠し状態を変更">
+                                <h3 id="phrase-en-${item.id}" class="text-lg sm:text-xl font-bold text-indigo-700 min-h-[1.5rem] leading-tight">${enHtml}</h3>
+                                ${item.reading ? `<p id="phrase-read-${item.id}" class="text-[10px] sm:text-xs text-gray-500 mt-1">${readHtml}</p>` : ''}
+                            </div>
+                        </div>
+                    </div>
+                    <details class="group border-t border-gray-100">
+                        <summary class="cursor-pointer p-3 bg-gray-50 hover:bg-gray-100 text-xs font-bold text-gray-500 flex justify-center items-center transition-colors">
+                            <span>会話例を見る</span>
+                            <i class="fas fa-chevron-down ml-2 transition-transform group-open:rotate-180"></i>
+                        </summary>
+                        <div class="p-4 sm:p-5 bg-white border-t border-gray-50">
+                            ${dialoguesHTML}
+                        </div>
+                    </details>
+                `;
+                container.appendChild(card);
             });
         }
 
-        function updateMaskDisplay(id) {
-            const elem = document.getElementById(`phrase-en-${id}`);
-            if(!elem) return;
-            const originalText = elem.dataset.original;
-            const state = maskStates[id] || 0;
-            elem.innerHTML = getMaskedHtml(originalText, state);
-            
-            const readingElem = document.getElementById(`phrase-reading-${id}`);
-            if (readingElem) {
-                if (state > 0) readingElem.classList.add('opacity-0');
-                else readingElem.classList.remove('opacity-0');
-            }
-        }
-
-        // ==========================================
-        // 🔧 管理（疑似エディタ）機能
-        // ==========================================
         function renderAdminList() {
             const container = document.getElementById('admin-list-container');
             if (!container) return;
@@ -720,7 +756,7 @@
                 const div = document.createElement('div');
                 div.className = 'flex justify-between items-center p-3 bg-gray-50 border border-gray-200 rounded-lg hover:bg-gray-100 transition-colors';
                 div.innerHTML = `
-                    <div class="pr-2 truncate">
+                    <div class="pr-2 truncate flex-1">
                         <div class="font-bold text-sm text-gray-800 truncate" title="${item.english}">${item.english}</div>
                         <div class="text-xs text-gray-500 truncate" title="${item.meaning}">${item.meaning}</div>
                     </div>
@@ -745,13 +781,7 @@
             }
 
             const newId = phraseData.length > 0 ? Math.max(...phraseData.map(p => p.id)) + 1 : 1;
-            phraseData.push({
-                id: newId,
-                english: en,
-                meaning: ja,
-                reading: read,
-                dialogues: []
-            });
+            phraseData.push({ id: newId, english: en, meaning: ja, reading: read, dialogues: [] });
 
             document.getElementById('add-en').value = '';
             document.getElementById('add-ja').value = '';
@@ -761,165 +791,437 @@
             msg.className = 'text-sm font-bold text-center h-5 text-green-500 mt-2';
             setTimeout(() => { msg.textContent = ''; }, 3000);
 
-            renderPhraseList();
-            renderAdminList();
+            loadData();
         }
 
         function deletePhrase(id) {
             if(confirm('このフレーズを削除しますか？')) {
                 phraseData = phraseData.filter(p => p.id !== id);
-                renderPhraseList();
-                renderAdminList();
+                loadData();
             }
         }
 
         function exportCode() {
             const clone = document.documentElement.cloneNode(true);
-
-            const baseClass = "px-4 py-2 sm:px-5 sm:py-2.5 rounded-full text-sm font-semibold transition-all duration-200 border ";
+            const baseClass = "px-3 py-2 sm:px-4 sm:py-2 rounded-full text-xs sm:text-sm font-bold transition-all border whitespace-nowrap ";
             
             clone.querySelector('#tab-list').className = baseClass + "bg-indigo-600 text-white shadow-md border-indigo-600";
             clone.querySelector('#tab-quiz').className = baseClass + "bg-white text-indigo-600 hover:bg-indigo-50 shadow-sm border-transparent";
-            clone.querySelector('#tab-wh').className = baseClass + "bg-white text-orange-500 hover:bg-orange-50 shadow-sm border-orange-100";
+            clone.querySelector('#tab-shoot').className = baseClass + "bg-white text-teal-600 hover:bg-teal-50 shadow-sm border-transparent";
+            clone.querySelector('#tab-wh').className = baseClass + "bg-white text-orange-500 hover:bg-orange-50 shadow-sm border-transparent";
             clone.querySelector('#tab-admin').className = baseClass + "bg-gray-100 text-gray-600 hover:bg-gray-200 shadow-sm border-transparent";
             
             clone.querySelector('#view-list').classList.remove('hidden');
             clone.querySelector('#view-quiz').classList.add('hidden');
+            clone.querySelector('#view-shoot').classList.add('hidden');
             clone.querySelector('#view-wh').classList.add('hidden');
             clone.querySelector('#view-admin').classList.add('hidden');
             
-            clone.querySelector('#quiz-setup').classList.remove('hidden');
-            clone.querySelector('#quiz-play').classList.add('hidden');
-            clone.querySelector('#quiz-play').classList.remove('flex');
-            clone.querySelector('#quiz-result').classList.add('hidden');
-            clone.querySelector('#quiz-timer').textContent = '0.0秒';
-            clone.querySelector('#auto-next-msg').classList.add('hidden');
-            clone.querySelector('#auto-next-msg').textContent = '';
-            clone.querySelector('#average-time').textContent = '0.0';
-            clone.querySelector('#battle-ui').classList.add('hidden');
-            clone.querySelector('#battle-ui').classList.remove('flex');
-            clone.querySelector('#main-panel').classList.remove('damage-player');
-
-            clone.querySelector('#wh-setup').classList.remove('hidden');
-            clone.querySelector('#wh-play').classList.add('hidden');
-            clone.querySelector('#wh-play').classList.remove('flex');
-            clone.querySelector('#wh-result').classList.add('hidden');
-            clone.querySelector('#wh-falling-area').innerHTML = '';
-
-            const enemyChar = clone.querySelector('#enemy-char');
-            if(enemyChar) enemyChar.style = '';
-
-            clone.querySelector('#phrase-list-container').innerHTML = '';
-            clone.querySelector('#options-container').innerHTML = '';
-            clone.querySelector('#typing-display').innerHTML = '';
-            clone.querySelector('#admin-list-container').innerHTML = '';
-
-            const hiddenInput = clone.querySelector('#hidden-typing-input');
-            if (hiddenInput) hiddenInput.removeAttribute('value');
-            clone.querySelector('#add-en').removeAttribute('value');
-            clone.querySelector('#add-ja').removeAttribute('value');
-            clone.querySelector('#add-reading').removeAttribute('value');
-            clone.querySelector('#add-msg').textContent = '';
-
+            // クリーンアップ
+            if(clone.querySelector('#phrase-list-container')) clone.querySelector('#phrase-list-container').innerHTML = '';
+            if(clone.querySelector('#admin-list-container')) clone.querySelector('#admin-list-container').innerHTML = '';
+            if(clone.querySelector('#shoot-area')) clone.querySelector('#shoot-area').innerHTML = '';
+            if(clone.querySelector('#wh-falling-area')) clone.querySelector('#wh-falling-area').innerHTML = '';
+            
             const scripts = clone.querySelectorAll('script');
             scripts.forEach(script => {
                 if (script.textContent.includes('// --- DATA_START ---')) {
-                    const newJsonStr = JSON.stringify(phraseData, null, 4);
+                    // maskStateを消してクリーンなデータを保存
+                    const cleanData = phraseData.map(({ maskState, ...rest }) => rest);
+                    const newJsonStr = JSON.stringify(cleanData, null, 4);
                     const regex = /\/\/ --- DATA_START ---[\s\S]*?\/\/ --- DATA_END ---/;
                     script.textContent = script.textContent.replace(regex, `// --- DATA_START ---\n        let phraseData = ${newJsonStr};\n        // --- DATA_END ---`);
                 }
             });
 
-            const finalHtml = "<!DOCTYPE html>\n<html lang=\"ja\">\n" + clone.innerHTML + "\n</html>";
-
             const textarea = document.createElement('textarea');
-            textarea.value = finalHtml;
-            textarea.style.position = 'fixed';
-            textarea.style.top = '-9999px';
+            textarea.value = "<!DOCTYPE html>\n<html lang=\"ja\">\n" + clone.innerHTML + "\n</html>";
+            textarea.style.position = 'fixed'; textarea.style.top = '-9999px';
             document.body.appendChild(textarea);
             textarea.select();
-            
-            try {
-                document.execCommand('copy');
-                alert("✨ 新しいコードをコピーしました！ ✨\n\nGoogleサイトの編集画面を開き、\n現在の「埋め込みコード」をすべて消して、\nコピーしたコードを貼り付けて保存してください。");
-            } catch (err) {
-                alert("コピーに失敗しました。お手数ですが、別のブラウザでお試しください。");
-            } finally {
-                document.body.removeChild(textarea);
-            }
+            try { document.execCommand('copy'); alert("コードをコピーしました！Googleサイトに上書き保存してください。"); } 
+            catch (err) { alert("コピー失敗"); } 
+            finally { document.body.removeChild(textarea); }
         }
 
 
         // ==========================================
-        // 🎨 UI描画処理
+        // 🎯 新ゲーム：ワード・スナイパー (本格シューティング)
         // ==========================================
-        function renderPhraseList() {
-            const container = document.getElementById('phrase-list-container');
-            container.innerHTML = '';
+        let shootGameActive = false;
+        let shootScore = 0;
+        let shootLevel = 1;
+        let shootQuestionIndex = 0;
+        let shootQuestions = [];
+        let shootTargets = []; 
+        let shootBullets = []; 
+        let shootAnimFrame = null;
+        let shootLastFrameTime = 0;
+        let shootCurrentQ = null;
+        let shootPlayerHP = 100;
+        const SHOOT_MAX_HP = 100;
+        let shootSpeed = 60; 
+        let shootAmmo = 3;   
+        let isWaitNextShootQ = false; 
+        
+        const dummyWordsPool = ["do", "did", "are", "is", "would", "will", "have", "has", "can", "could", "what", "how", "where", "when", "who", "why", "you", "me", "it", "this", "that", "about", "for", "to", "in", "on", "at", "good", "bad", "much", "many", "some", "any", "get", "take", "make"];
 
-            phraseData.forEach(item => {
-                const card = document.createElement('div');
-                card.className = 'bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden transition-all hover:shadow-md';
+        function startShootGame() {
+            document.getElementById('shoot-setup').classList.add('hidden');
+            document.getElementById('shoot-result').classList.add('hidden');
+            document.getElementById('shoot-play').classList.remove('hidden');
+            document.getElementById('shoot-play').classList.add('flex');
+            
+            shootLevel = 1;
+            shootScore = 0;
+            shootPlayerHP = SHOOT_MAX_HP;
+            shootQuestionIndex = 0;
+            shootSpeed = 60; 
+            
+            document.getElementById('shoot-hp-bar').style.width = '100%';
+            document.getElementById('shoot-hp-bar').className = 'h-full transition-all bg-teal-400';
+            document.getElementById('shoot-score').textContent = '0';
+            const levelDisplay = document.getElementById('shoot-level-display');
+            if (levelDisplay) levelDisplay.textContent = shootLevel;
+            
+            shootQuestions = phraseData.map(createShootQuestion).filter(q => q !== null);
+            shootQuestions = shuffleArray(shootQuestions);
+            
+            if (shootQuestions.length === 0) {
+                alert("問題を作れるフレーズがありません。");
+                endShootGame(true);
+                switchTab('list');
+                return;
+            }
+
+            shootGameActive = true;
+            shootLastFrameTime = performance.now();
+            loadShootQuestion();
+            shootAnimFrame = requestAnimationFrame(shootGameLoop);
+        }
+
+        function createShootQuestion(phraseObj) {
+            const en = phraseObj.english;
+            const words = en.split(/([\s\?.,!]+)/); 
+            const wordList = words.filter(w => /^[a-zA-Z']+$/.test(w) && w.length >= 2);
+            if (wordList.length === 0) return null;
+            
+            const targetWord = wordList[Math.floor(Math.random() * wordList.length)];
+            const qText = words.map(w => w === targetWord ? `<span class="bg-yellow-200 text-yellow-800 px-3 py-0.5 rounded mx-0.5 border-b-2 border-yellow-400 font-mono font-bold inline-block min-w-[40px]">[ ? ]</span>` : w).join('');
+            
+            return { ja: phraseObj.meaning, en: qText, ans: targetWord };
+        }
+
+        function loadShootQuestion() {
+            isWaitNextShootQ = false;
+            shootAmmo = 3;
+            updateShootAmmoUI();
+
+            if (shootQuestionIndex >= shootQuestions.length) {
+                shootQuestions = shuffleArray(shootQuestions);
+                shootQuestionIndex = 0;
+                shootLevel++;
+                shootSpeed += 15; 
+                const levelDisplay = document.getElementById('shoot-level-display');
+                if (levelDisplay) levelDisplay.textContent = shootLevel;
+            }
+            
+            shootCurrentQ = shootQuestions[shootQuestionIndex];
+            document.getElementById('shoot-ja').textContent = shootCurrentQ.ja;
+            document.getElementById('shoot-en').innerHTML = shootCurrentQ.en;
+            
+            const area = document.getElementById('shoot-area');
+            Array.from(area.children).forEach(child => {
+                if(child.id !== 'shoot-player-char') child.remove();
+            });
+            shootTargets = [];
+            shootBullets = [];
+            
+            let targetWords = [shootCurrentQ.ans];
+            let availableDummies = dummyWordsPool.filter(w => w.toLowerCase() !== shootCurrentQ.ans.toLowerCase());
+            availableDummies = shuffleArray(availableDummies);
+            
+            targetWords.push(availableDummies[0], availableDummies[1], availableDummies[2], availableDummies[3]);
+            if(shootLevel >= 2) targetWords.push(availableDummies[4]);
+            if(shootLevel >= 3) targetWords.push(availableDummies[5], availableDummies[6]);
+            
+            targetWords = shuffleArray(targetWords); 
+            
+            const areaWidth = area.clientWidth || 300;
+            const areaHeight = area.clientHeight || 400;
+            const slotWidth = areaWidth / targetWords.length;
+
+            targetWords.forEach((word, index) => {
+                const el = document.createElement('div');
+                const enemyIcon = ['👾', '👽', '👻', '🦇', '🤖', '💀'][index % 6];
                 
-                let dialoguesHTML = '';
-                if(item.dialogues && item.dialogues.length > 0) {
-                    item.dialogues.forEach(d => {
-                        const isStylist = d.speaker === "美容師";
-                        const bubbleColor = isStylist ? 'bg-indigo-50 border-indigo-100' : 'bg-teal-50 border-teal-100';
-                        const alignment = isStylist ? 'pr-6 sm:pr-12' : 'pl-6 sm:pl-12';
-                        const icon = isStylist ? '<i class="fas fa-cut text-indigo-400"></i>' : '<i class="fas fa-user text-teal-400"></i>';
-                        
-                        dialoguesHTML += `
-                            <div class="mb-3 ${alignment}">
-                                <div class="text-xs text-gray-500 mb-1 flex items-center ${isStylist ? '' : 'justify-end'} gap-1 font-bold">
-                                    ${isStylist ? icon + ' ' + d.speaker : d.speaker + ' ' + icon}
-                                </div>
-                                <div class="p-3 rounded-xl border ${bubbleColor} inline-block w-full shadow-sm">
-                                    <p class="font-bold text-gray-800 text-sm sm:text-base">${d.en}</p>
-                                    ${d.reading ? `<p class="text-xs text-gray-500 mt-1">${d.reading}</p>` : ''}
-                                    <p class="text-sm text-gray-700 mt-2 border-t border-gray-200/50 pt-2">${d.ja}</p>
-                                </div>
-                            </div>
-                        `;
-                    });
-                } else {
-                    dialoguesHTML = '<p class="text-sm text-gray-500 text-center py-4 bg-gray-50 rounded-lg">会話例は登録されていません。</p>';
-                }
-
-                const currentMaskState = maskStates[item.id] || 0;
-                const safeEnglishText = item.english.replace(/"/g, '&quot;');
-
-                card.innerHTML = `
-                    <div class="p-4 sm:p-5">
-                        <div class="flex flex-col sm:flex-row sm:items-start justify-between gap-3 sm:gap-2">
-                            <div class="flex-1 cursor-pointer group hover:bg-gray-50 -mx-2 px-2 py-1 rounded-lg transition-colors relative" onclick="toggleMask(${item.id})" title="タップで表示切り替え">
-                                <h3 id="phrase-en-${item.id}" data-original="${safeEnglishText}" class="text-lg sm:text-xl font-bold text-indigo-700 transition-all select-none break-words pr-8">
-                                    ${getMaskedHtml(item.english, currentMaskState)}
-                               </h3>
-                                ${item.reading ? `<p id="phrase-reading-${item.id}" class="text-xs sm:text-sm text-gray-500 mt-1 transition-opacity duration-200 ${currentMaskState > 0 ? 'opacity-0' : ''}"><i class="fas fa-volume-up opacity-50 mr-1"></i>${item.reading}</p>` : ''}
-                                <div class="absolute top-2 right-2 text-[10px] sm:text-xs text-indigo-300 opacity-0 group-hover:opacity-100 transition-opacity"><i class="fas fa-hand-pointer mr-1"></i>隠す</div>
-                            </div>
-                            <div class="self-start bg-indigo-100 text-indigo-800 px-3 py-1.5 rounded-lg text-sm font-bold shadow-sm flex-none">
-                                ${item.meaning}
-                            </div>
-                        </div>
-                    </div>
-                    <details class="group border-t border-gray-100">
-                        <summary class="cursor-pointer p-3 bg-gray-50 hover:bg-gray-100 text-sm font-bold text-gray-500 flex justify-center items-center transition-colors">
-                            <span>会話例を見る</span>
-                            <i class="fas fa-chevron-down ml-2 transition-transform group-open:rotate-180"></i>
-                        </summary>
-                        <div class="p-4 sm:p-5 bg-white border-t border-gray-50">
-                            ${dialoguesHTML}
-                        </div>
-                    </details>
+                el.className = `shoot-target flex flex-col items-center select-none transform hover:scale-110 z-10`;
+                el.innerHTML = `
+                    <div class="text-3xl drop-shadow-md enemy-icon">${enemyIcon}</div>
+                    <div class="bg-slate-800 text-white border-2 border-slate-600 px-3 py-1 font-bold text-sm rounded-md word-label">${word}</div>
                 `;
-                container.appendChild(card);
+                
+                const startX = (index * slotWidth) + (Math.random() * (slotWidth - 50));
+                const startY = areaHeight + 20 + (Math.random() * 150); 
+                const vx = (Math.random() > 0.5 ? 1 : -1) * (30 + Math.random() * 30);
+                
+                el.style.left = `${startX}px`;
+                el.style.top = `${startY}px`;
+                
+                area.appendChild(el);
+                shootTargets.push({ element: el, word: word, x: startX, y: startY, vx: vx, isAns: word === shootCurrentQ.ans });
             });
         }
 
+        function updateShootAmmoUI() {
+            let ammoStr = '';
+            for(let i=0; i<3; i++) {
+                if(i < shootAmmo) ammoStr += '⚔️';
+                else ammoStr += '<span class="opacity-30 grayscale">⚔️</span>';
+            }
+            document.getElementById('shoot-ammo-display').innerHTML = ammoStr;
+        }
+
+        function shootGameLoop(currentTime) {
+            if (!shootGameActive) return;
+            let deltaTime = (currentTime - shootLastFrameTime) / 1000;
+            if (deltaTime > 0.1) deltaTime = 0.1; 
+            shootLastFrameTime = currentTime;
+            
+            const area = document.getElementById('shoot-area');
+            const areaWidth = area.clientWidth;
+            const areaHeight = area.clientHeight;
+            let missReason = null;
+
+            // 手裏剣移動と当たり判定
+            for (let i = shootBullets.length - 1; i >= 0; i--) {
+                let b = shootBullets[i];
+                b.x += b.vx * deltaTime;
+                b.y += b.vy * deltaTime;
+                
+                if (b.element) {
+                    b.element.style.left = `${b.x - 12}px`;
+                    b.element.style.top = `${b.y - 12}px`;
+                }
+
+                if (b.x < -50 || b.x > areaWidth + 50 || b.y < -50 || b.y > areaHeight + 50) {
+                    if (b.element) b.element.remove();
+                    shootBullets.splice(i, 1);
+                    continue;
+                }
+
+                let hitTargetIndex = -1;
+                for (let j = shootTargets.length - 1; j >= 0; j--) {
+                    let t = shootTargets[j];
+                    let tCenterX = t.x + 30; 
+                    let tCenterY = t.y + 30; 
+                    let dx = b.x - tCenterX;
+                    let dy = b.y - tCenterY;
+                    let dist = Math.sqrt(dx * dx + dy * dy);
+                    
+                    if (dist < 40) { 
+                        hitTargetIndex = j;
+                        break;
+                    }
+                }
+
+                if (hitTargetIndex !== -1) {
+                    let t = shootTargets[hitTargetIndex];
+                    if (b.element) b.element.remove();
+                    shootBullets.splice(i, 1); 
+                    
+                    if (t.isAns) {
+                        isWaitNextShootQ = true;
+                        shootScore += 20;
+                        document.getElementById('shoot-score').textContent = shootScore;
+                        
+                        t.element.innerHTML = '<div class="text-5xl drop-shadow-lg">💥</div>';
+                        t.element.classList.add('scale-150', 'transition-all', 'z-30');
+                        showShootFeedback("NICE!", "text-teal-400");
+                        
+                        let solvedTarget = t.element;
+                        setTimeout(() => {
+                            if(solvedTarget) solvedTarget.remove();
+                            if(shootGameActive) {
+                                shootQuestionIndex++;
+                                loadShootQuestion();
+                            }
+                        }, 400);
+
+                        shootTargets.splice(hitTargetIndex, 1);
+                        
+                    } else {
+                        // ダミーはペナルティなし
+                        t.element.innerHTML = '<div class="text-4xl drop-shadow-lg opacity-50">💨</div>';
+                        t.element.classList.add('transition-all');
+                        let dummyTarget = t.element;
+                        setTimeout(() => {
+                            if(dummyTarget) dummyTarget.remove();
+                        }, 200);
+                        shootTargets.splice(hitTargetIndex, 1);
+                    }
+                }
+            }
+
+            // 敵の移動
+            for (let i = shootTargets.length - 1; i >= 0; i--) {
+                let t = shootTargets[i];
+                t.y -= shootSpeed * deltaTime;
+                t.x += t.vx * deltaTime;
+                
+                // 壁反射
+                if (t.x <= 10) {
+                    t.x = 10;
+                    t.vx *= -1; 
+                } else if (t.x >= areaWidth - 70) {
+                    t.x = areaWidth - 70;
+                    t.vx *= -1; 
+                }
+                
+                if (t.element) {
+                    t.element.style.left = `${t.x}px`;
+                    t.element.style.top = `${t.y}px`;
+                }
+                
+                if (t.y < -60) {
+                    if (t.isAns) missReason = "escaped"; 
+                    if (t.element) t.element.remove();
+                    shootTargets.splice(i, 1);
+                }
+            }
+            
+            // 弾切れチェック
+            if (!isWaitNextShootQ && shootAmmo <= 0 && shootBullets.length === 0) {
+                if (shootTargets.some(t => t.isAns)) {
+                    missReason = "no_ammo";
+                }
+            }
+
+            if (missReason && !isWaitNextShootQ) {
+                isWaitNextShootQ = true;
+                shootTargets.forEach(tgt => { if (tgt.element) tgt.element.remove(); });
+                shootTargets = [];
+                
+                damageShootPlayer(15);
+                if (missReason === "escaped") {
+                    showShootFeedback("ESCAPED!", "text-red-500");
+                } else {
+                    showShootFeedback("NO AMMO!", "text-red-500");
+                }
+                
+                shootQuestionIndex++;
+                if (shootPlayerHP > 0) setTimeout(loadShootQuestion, 600);
+            }
+
+            if (shootGameActive && shootPlayerHP > 0) {
+                shootAnimFrame = requestAnimationFrame(shootGameLoop);
+            }
+        }
+
+        function clickShootArea(event) {
+            if (!shootGameActive || isWaitNextShootQ) return;
+            if (shootAmmo <= 0) return; 
+            
+            shootAmmo--;
+            updateShootAmmoUI();
+            
+            const area = document.getElementById('shoot-area');
+            const rect = area.getBoundingClientRect();
+            
+            const startX = rect.width / 2;
+            const startY = rect.height - 20;
+            
+            const targetX = event.clientX - rect.left;
+            const targetY = event.clientY - rect.top;
+
+            const dx = targetX - startX;
+            const dy = targetY - startY;
+            const dist = Math.sqrt(dx * dx + dy * dy);
+            
+            if (dist === 0) return;
+
+            const speed = 700; 
+            const vx = (dx / dist) * speed;
+            const vy = (dy / dist) * speed;
+
+            const bullet = document.createElement('div');
+            bullet.className = 'bullet-anim';
+            bullet.innerHTML = '⚔️'; 
+            bullet.style.left = `${startX - 12}px`;
+            bullet.style.top = `${startY - 12}px`;
+            
+            area.appendChild(bullet);
+
+            shootBullets.push({
+                element: bullet,
+                x: startX,
+                y: startY,
+                vx: vx,
+                vy: vy
+            });
+            
+            const playerChar = document.getElementById('shoot-player-char');
+            playerChar.classList.remove('anim-shoot-attack');
+            void playerChar.offsetWidth;
+            playerChar.classList.add('anim-shoot-attack');
+        }
+
+        function showShootFeedback(text, colorClass) {
+            const area = document.getElementById('shoot-area');
+            const fb = document.createElement('div');
+            fb.className = `absolute top-1/3 left-1/2 transform -translate-x-1/2 -translate-y-1/2 text-5xl font-black ${colorClass} z-40 pointer-events-none drop-shadow-md fade-in`;
+            fb.textContent = text;
+            area.appendChild(fb);
+            setTimeout(() => {
+                fb.style.opacity = '0';
+                fb.style.transform = 'translate(-50%, -70%)';
+                fb.style.transition = 'all 0.3s ease-out';
+                setTimeout(() => fb.remove(), 300);
+            }, 300);
+        }
+
+        function damageShootPlayer(amount) {
+            shootPlayerHP = Math.max(0, shootPlayerHP - amount);
+            const bar = document.getElementById('shoot-hp-bar');
+            bar.style.width = `${shootPlayerHP}%`;
+            if (shootPlayerHP < 30) bar.className = 'h-full bg-red-500 transition-all';
+            
+            const area = document.getElementById('shoot-play');
+            area.classList.remove('shoot-damage-flash');
+            void area.offsetWidth;
+            area.classList.add('shoot-damage-flash');
+            
+            const char = document.getElementById('shoot-player-char');
+            char.classList.remove('anim-damage');
+            void char.offsetWidth;
+            char.classList.add('anim-damage');
+
+            if (shootPlayerHP <= 0) {
+                endShootGame(false);
+            }
+        }
+
+        function endShootGame(isForced) {
+            shootGameActive = false;
+            cancelAnimationFrame(shootAnimFrame);
+            if (!isForced) {
+                document.getElementById('shoot-play').classList.add('hidden');
+                document.getElementById('shoot-play').classList.remove('flex');
+                document.getElementById('shoot-result').classList.remove('hidden');
+                document.getElementById('shoot-final-score').textContent = shootScore;
+                document.getElementById('shoot-final-level').textContent = shootLevel;
+            }
+        }
+
+        function resetShootGame() {
+            document.getElementById('shoot-result').classList.add('hidden');
+            document.getElementById('shoot-setup').classList.remove('hidden');
+            document.getElementById('shoot-play').classList.add('hidden');
+            document.getElementById('shoot-play').classList.remove('flex');
+        }
+
         // ==========================================
-        // 🎮 クイズ機能のロジック
+        // 🎮 安定版タイピングクイズ (既存コード)
         // ==========================================
         let quizQuestions = [];
         let currentQuestionIndex = 0;
@@ -941,15 +1243,6 @@
         let lastValidCount = 0;
         
         const enemyEmojis = ['👹', '👺', '👽', '👾', '🤖', '🧟', '🧛', '🐲'];
-
-        function shuffleArray(array) {
-            const newArr = [...array];
-            for (let i = newArr.length - 1; i > 0; i--) {
-                const j = Math.floor(Math.random() * (i + 1));
-                [newArr[i], newArr[j]] = [newArr[j], newArr[i]];
-            }
-            return newArr;
-        }
         
         function startTimer() {
             clearInterval(timerInterval);
@@ -1021,7 +1314,7 @@
             const el = document.getElementById(elementId);
             if(!el) return;
             el.classList.remove(animClass);
-            void el.offsetWidth; 
+            void el.offsetWidth;
             el.classList.add(animClass);
         }
 
@@ -1147,7 +1440,6 @@
             }
         }
 
-        // --- 直接入力風 タイピングUI制御 ---
         let currentTypingAnswer = "";
         let typingCharElements = []; 
 
@@ -1453,10 +1745,8 @@
             document.getElementById('quiz-timer').textContent = '0.0秒';
             document.getElementById('quiz-result').classList.add('hidden');
             document.getElementById('quiz-setup').classList.remove('hidden');
-            
             document.getElementById('quiz-play').classList.add('hidden');
             document.getElementById('quiz-play').classList.remove('flex');
-            
             document.getElementById('main-panel').classList.remove('damage-player');
             
             const playerChar = document.getElementById('player-char');
@@ -1466,10 +1756,10 @@
         }
 
         // ==========================================
-        // 🔥 疑問詞特訓機能 (落ちものゲーム)
+        // 🔥 安定版疑問詞特訓機能 (既存コード)
         // ==========================================
         let whGameActive = false;
-        let whScore = 20; // 0点でゲームオーバーにするため、初期値を20ポイントに設定（猶予用）
+        let whScore = 0;
         let whLife = 3;
         let whLevel = 1;
         let whBaseLevel = 1; 
@@ -1480,9 +1770,6 @@
         let whLastFrameTime = 0;
         let whAnimFrame = null;
         let whCardIdCounter = 0;
-        
-        // 乱れ打ち（ボタン連打）防止用のロックフラグ
-        let whButtonsLocked = false;
 
         function startWhGame(level = 1) {
             document.getElementById('wh-setup').classList.add('hidden');
@@ -1490,19 +1777,11 @@
             document.getElementById('wh-play').classList.remove('hidden');
             document.getElementById('wh-play').classList.add('flex');
             
-            // ロックフラグとボタンUIをリセット
-            whButtonsLocked = false;
-            const container = document.getElementById('wh-buttons-container');
-            if(container) {
-                container.classList.remove('opacity-50', 'pointer-events-none');
-            }
-            
-            whScore = 20; // 初期持ち点を20に変更
+            whScore = 0;
             whLife = 3;
             whBaseLevel = level;
             whLevel = level;
             
-            // 選択されたレベルに応じて初期スピードと出現間隔をさらにゆっくりに設定
             if (level === 1) {
                 whSpeed = 25; 
                 whSpawnInterval = 4000;
@@ -1588,10 +1867,8 @@
             });
         }
 
-        // 疑問詞の判定処理 (お手つきペナルティ機能を追加)
-        function whCheck(selectedAns, btnElement) {
-            // ゲーム中ではない、またはボタンロック時間中なら何もしない
-            if (!whGameActive || whActiveCards.length === 0 || whButtonsLocked) return;
+        function whCheck(selectedAns) {
+            if (!whGameActive || whActiveCards.length === 0) return;
             
             whActiveCards.sort((a, b) => b.y - a.y);
             const visibleCards = whActiveCards.filter(c => c.y > -50);
@@ -1601,73 +1878,37 @@
             const targetIndex = whActiveCards.findIndex(c => c.id === targetCard.id);
             
             if (targetCard.ans === selectedAns) {
-                // 【正解】
                 targetCard.innerElement.classList.add('wh-correct');
                 const wrapper = targetCard.element;
                 setTimeout(() => { if(wrapper) wrapper.remove(); }, 200);
                 whActiveCards.splice(targetIndex, 1);
                 
                 whScore += 10;
-                showWhScorePop(targetCard.y, '+10', 'text-orange-400');
+                showWhScorePop(targetCard.y);
                 checkWhLevelUp();
                 updateWhUI();
             } else {
-                // 【不正解 - 乱れ打ち対策】
                 targetCard.innerElement.classList.remove('wh-wrong');
                 void targetCard.innerElement.offsetWidth;
                 targetCard.innerElement.classList.add('wh-wrong');
                 
-                // ミスでスコアが10点減点 (連打ペナルティ)
-                whScore = Math.max(0, whScore - 10);
-                showWhScorePop(targetCard.y, '-10', 'text-red-500 font-black');
+                whScore = Math.max(0, whScore - 5);
                 updateWhUI();
-                
-                // 💥 スコアが0点になったら即ゲームオーバーにする
-                if (whScore <= 0) {
-                    endWhGame(false);
-                    return;
-                }
-                
-                // 💥 乱れ打ち防止：ボタンを0.8秒間完全にロックする
-                whButtonsLocked = true;
-                const buttonsContainer = document.getElementById('wh-buttons-container');
-                buttonsContainer.classList.add('opacity-50', 'pointer-events-none');
-                
-                // ロック中であるグラフィック効果
-                const oldText = btnElement.innerHTML;
-                btnElement.classList.remove('bg-blue-600', 'bg-green-600', 'bg-red-600', 'bg-yellow-500', 'bg-purple-600', 'bg-pink-600');
-                btnElement.classList.add('bg-slate-700');
-                btnElement.innerHTML = '<i class="fas fa-lock text-sm"></i> COOLING';
-                
-                setTimeout(() => {
-                    whButtonsLocked = false;
-                    buttonsContainer.classList.remove('opacity-50', 'pointer-events-none');
-                    btnElement.classList.remove('bg-slate-700');
-                    // 元のカラークラスに戻す
-                    if(selectedAns === 'What') btnElement.classList.add('bg-blue-600');
-                    if(selectedAns === 'How') btnElement.classList.add('bg-green-600');
-                    if(selectedAns === 'Where') btnElement.classList.add('bg-red-600');
-                    if(selectedAns === 'When') btnElement.classList.add('bg-yellow-500');
-                    if(selectedAns === 'Who') btnElement.classList.add('bg-purple-600');
-                    if(selectedAns === 'Why') btnElement.classList.add('bg-pink-600');
-                    btnElement.innerHTML = oldText;
-                }, 800); // 0.8秒間ボタンをロックして連打を防止
             }
         }
 
-        function showWhScorePop(yPos, text, colorClass) {
+        function showWhScorePop(yPos) {
             const area = document.getElementById('wh-falling-area');
             const pop = document.createElement('div');
-            pop.className = `absolute left-1/2 -translate-x-1/2 z-20 pointer-events-none wh-score-pop ${colorClass}`;
-            pop.textContent = text;
+            pop.className = 'absolute left-1/2 -translate-x-1/2 text-orange-400 font-black text-2xl z-20 pointer-events-none wh-score-pop';
+            pop.textContent = '+10';
             pop.style.top = Math.max(0, yPos) + 'px';
             area.appendChild(pop);
             setTimeout(() => pop.remove(), 500);
         }
 
         function checkWhLevelUp() {
-            // スコアに応じてレベルアップ（開始レベルに加算していく）
-            const newLevel = Math.floor((whScore - 20) / 50) + whBaseLevel;
+            const newLevel = Math.floor(whScore / 50) + whBaseLevel;
             if (newLevel > whLevel) {
                 whLevel = newLevel;
                 whSpeed += 10; 
@@ -1717,6 +1958,13 @@
             }
         }
 
+        function resetWhGame() {
+            document.getElementById('wh-result').classList.add('hidden');
+            document.getElementById('wh-setup').classList.remove('hidden');
+            document.getElementById('wh-play').classList.add('hidden');
+            document.getElementById('wh-play').classList.remove('flex');
+        }
+
         function updateWhUI() {
             document.getElementById('wh-score').textContent = whScore;
             document.getElementById('wh-level').textContent = whLevel;
@@ -1728,60 +1976,62 @@
             }
             document.getElementById('wh-life').textContent = hearts;
         }
-        
-        function resetWhGame() {
-            document.getElementById('wh-result').classList.add('hidden');
-            document.getElementById('wh-setup').classList.remove('hidden');
-        }
-
 
         // ==========================================
         // 🔄 画面タブ切り替え処理
         // ==========================================
         function switchTab(tabName) {
             clearAutoNext(); 
-            clearInterval(timerInterval); 
-            if(whGameActive) endWhGame(true); // 特訓モード終了
+            clearInterval(timerInterval);
+            if(typeof endShootGame === 'function' && shootGameActive) endShootGame(true);
+            if(whGameActive) endWhGame(true);
             
             const btnList = document.getElementById('tab-list');
             const btnQuiz = document.getElementById('tab-quiz');
+            const btnShoot = document.getElementById('tab-shoot');
             const btnWh = document.getElementById('tab-wh');
             const btnAdmin = document.getElementById('tab-admin');
             
             const viewList = document.getElementById('view-list');
             const viewQuiz = document.getElementById('view-quiz');
+            const viewShoot = document.getElementById('view-shoot');
             const viewWh = document.getElementById('view-wh');
             const viewAdmin = document.getElementById('view-admin');
 
-            const baseClass = "px-4 py-2 sm:px-5 sm:py-2.5 rounded-full text-sm font-semibold transition-all duration-200 border ";
+            const baseClass = "px-3 py-2 sm:px-4 sm:py-2 rounded-full text-xs sm:text-sm font-bold transition-all border whitespace-nowrap ";
+            const activeClass = baseClass + "bg-indigo-600 text-white shadow-md border-indigo-600";
+            const inactiveClass = baseClass + "bg-white text-indigo-600 hover:bg-indigo-50 shadow-sm border-transparent";
+            const activeAdminClass = baseClass + "bg-gray-600 text-white shadow-md border-gray-600";
+            const inactiveAdminClass = baseClass + "bg-gray-100 text-gray-600 hover:bg-gray-200 shadow-sm border-transparent";
 
-            btnList.className = baseClass + "bg-white text-indigo-600 hover:bg-indigo-50 shadow-sm border-transparent";
-            btnQuiz.className = baseClass + "bg-white text-indigo-600 hover:bg-indigo-50 shadow-sm border-transparent";
-            btnWh.className = baseClass + "bg-white text-orange-500 hover:bg-orange-50 shadow-sm border-orange-100";
-            btnAdmin.className = baseClass + "bg-gray-100 text-gray-600 hover:bg-gray-200 shadow-sm border-transparent";
+            btnList.className = inactiveClass;
+            btnQuiz.className = inactiveClass;
+            btnShoot.className = inactiveClass;
+            btnWh.className = baseClass + "bg-white text-orange-500 hover:bg-orange-50 shadow-sm border-transparent";
+            btnAdmin.className = inactiveAdminClass;
             
-            if(tabName === 'wh') {
-                const badge = btnWh.querySelector('span');
-                if(badge) badge.classList.remove('animate-pulse');
-            }
-
             viewList.classList.add('hidden');
             viewQuiz.classList.add('hidden');
+            viewShoot.classList.add('hidden');
             viewWh.classList.add('hidden');
             viewAdmin.classList.add('hidden');
 
             if (tabName === 'list') {
-                btnList.className = baseClass + "bg-indigo-600 text-white shadow-md border-indigo-600";
+                btnList.className = activeClass;
                 viewList.classList.remove('hidden');
             } else if (tabName === 'quiz') {
-                btnQuiz.className = baseClass + "bg-indigo-600 text-white shadow-md border-indigo-600";
+                btnQuiz.className = activeClass;
                 viewQuiz.classList.remove('hidden');
                 resetQuiz();
+            } else if (tabName === 'shoot') {
+                btnShoot.className = baseClass + "bg-teal-500 text-white shadow-md border-teal-500";
+                viewShoot.classList.remove('hidden');
+                viewShoot.classList.add('flex');
             } else if (tabName === 'wh') {
                 btnWh.className = baseClass + "bg-orange-500 text-white shadow-md border-orange-500";
                 viewWh.classList.remove('hidden');
             } else if (tabName === 'admin') {
-                btnAdmin.className = baseClass + "bg-gray-600 text-white shadow-md border-gray-600";
+                btnAdmin.className = activeAdminClass;
                 viewAdmin.classList.remove('hidden');
             }
         }
