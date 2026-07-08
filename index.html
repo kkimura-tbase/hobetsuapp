@@ -404,7 +404,10 @@
                     </div>
 
                     <!-- 射撃エリア -->
-                    <div id="shoot-area" class="flex-1 bg-slate-900 relative overflow-hidden rounded-b-xl border-4 border-slate-700 cursor-crosshair" onpointerdown="clickShootArea(event)"></div>
+                    <div id="shoot-area" class="flex-1 bg-slate-900 relative overflow-hidden rounded-b-xl border-4 border-slate-700 cursor-crosshair" onpointerdown="clickShootArea(event)">
+                        <!-- 消えていた忍者キャラクターを復活 -->
+                        <div class="absolute left-1/2 bottom-0 transform -translate-x-1/2 text-5xl sm:text-6xl z-30 pointer-events-none drop-shadow-xl transition-transform" id="shoot-player-char">🥷</div>
+                    </div>
                 </div>
 
                 <!-- 結果画面 -->
@@ -1221,9 +1224,11 @@
             });
             
             const playerChar = document.getElementById('shoot-player-char');
-            playerChar.classList.remove('anim-shoot-attack');
-            void playerChar.offsetWidth;
-            playerChar.classList.add('anim-shoot-attack');
+            if (playerChar) {
+                playerChar.classList.remove('anim-shoot-attack');
+                void playerChar.offsetWidth;
+                playerChar.classList.add('anim-shoot-attack');
+            }
         }
 
         function showShootFeedback(text, colorClass) {
@@ -1252,9 +1257,11 @@
             area.classList.add('shoot-damage-flash');
             
             const char = document.getElementById('shoot-player-char');
-            char.classList.remove('anim-damage');
-            void char.offsetWidth;
-            char.classList.add('anim-damage');
+            if (char) {
+                char.classList.remove('anim-char-damage');
+                void char.offsetWidth;
+                char.classList.add('anim-char-damage');
+            }
 
             if (shootPlayerHP <= 0) {
                 endShootGame(false);
