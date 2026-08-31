@@ -1126,6 +1126,7 @@
         let reorderDragPlaceholder = null;
         let reorderDragOffsetX = 0;
         let reorderDragOffsetY = 0;
+        let reorderDragPointerId = null;
 
         function startReorderGame() {
             reorderQuestions = shuffleArray(reorderData).slice(0, Math.min(REORDER_TOTAL_QUESTIONS, reorderData.length));
@@ -1212,44 +1213,71 @@
 
         function startReorderDrag(event) {
             if (!reorderGameActive || reorderLocked || (event.button !== undefined && event.button !== 0)) return;
-            event.preventDefault();
+            if (reorderDraggedTile) endReorderDrag({});
             reorderDraggedTile = event.currentTarget;
             reorderDragUsesMouse = event.pointerType === 'mouse' || !event.pointerType;
+            reorderDragPointerId = event.pointerId ?? null;
+            // マウスでは互換 mouseup を消さない。タッチ時だけスクロールを止める。
+            if (!reorderDragUsesMouse && event.cancelable) event.preventDefault();
             const container = document.getElementById('order-tiles');
             const rect = reorderDraggedTile.getBoundingClientRect();
             reorderDragOffsetX = event.clientX - rect.left;
             reorderDragOffsetY = event.clientY - rect.top;
 
-            reorderDragPlaceholder = document.createElement('div');
-            reorderDragPlaceholder.className = 'reorder-placeholder';
-            reorderDragPlaceholder.style.width = `${rect.width}px`;
-            reorderDragPlaceholder.style.height = `${rect.height}px`;
-            reorderDragPlaceholder.style.flexBasis = `${rect.width}px`;
-            container.insertBefore(reorderDragPlaceholder, reorderDraggedTile);
+            addReorderDragListeners();
 
-            document.body.appendChild(reorderDraggedTile);
-            reorderDraggedTile.style.left = `${rect.left}px`;
-            reorderDraggedTile.style.top = `${rect.top}px`;
-            reorderDraggedTile.style.width = `${rect.width}px`;
-            reorderDraggedTile.style.height = `${rect.height}px`;
-            reorderDraggedTile.classList.add('dragging');
-            container.classList.add('is-dragging');
-            if (!reorderDragUsesMouse && event.pointerId !== undefined && reorderDraggedTile.setPointerCapture) {
-                reorderDraggedTile.setPointerCapture(event.pointerId);
+            try {
+                reorderDragPlaceholder = document.createElement('div');
+                reorderDragPlaceholder.className = 'reorder-placeholder';
+                reorderDragPlaceholder.style.width = `${rect.width}px`;
+                reorderDragPlaceholder.style.height = `${rect.height}px`;
+                reorderDragPlaceholder.style.flexBasis = `${rect.width}px`;
+                container.insertBefore(reorderDragPlaceholder, reorderDraggedTile);
+
+                document.body.appendChild(reorderDraggedTile);
+                reorderDraggedTile.style.left = `${rect.left}px`;
+                reorderDraggedTile.style.top = `${rect.top}px`;
+                reorderDraggedTile.style.width = `${rect.width}px`;
+                reorderDraggedTile.style.height = `${rect.height}px`;
+                reorderDraggedTile.classList.add('dragging');
+                container.classList.add('is-dragging');
+            } catch (error) {
+                console.error('Failed to start reorder drag:', error);
+                endReorderDrag({});
             }
+        }
+
+        function addReorderDragListeners() {
+            // pointerup を主経路にすることで、押下中だけカードを持ち上げる。
+            document.addEventListener('pointermove', moveReorderDrag, { passive: false });
+            document.addEventListener('pointerup', endReorderDrag);
+            document.addEventListener('pointercancel', endReorderDrag);
             if (reorderDragUsesMouse) {
+                // マウスイベントは古いブラウザと取りこぼし対策のフォールバック。
                 document.addEventListener('mousemove', moveReorderDrag);
                 document.addEventListener('mouseup', endReorderDrag);
             } else {
-                document.addEventListener('pointermove', moveReorderDrag);
-                document.addEventListener('pointerup', endReorderDrag);
-                document.addEventListener('pointercancel', endReorderDrag);
+                document.addEventListener('touchend', endReorderDrag);
+                document.addEventListener('touchcancel', endReorderDrag);
             }
+            window.addEventListener('blur', endReorderDrag);
+            window.addEventListener('pagehide', endReorderDrag);
+            document.addEventListener('visibilitychange', handleReorderDragVisibility);
+        }
+
+        function handleReorderDragVisibility() {
+            if (document.hidden) endReorderDrag({});
         }
 
         function moveReorderDrag(event) {
             if (!reorderDraggedTile) return;
-            event.preventDefault();
+            if (reorderDragPointerId !== null && event.pointerId !== undefined && event.pointerId !== reorderDragPointerId) return;
+            // mouseup が画面外で欠けても、ボタンが離れていれば即座に着地させる。
+            if (reorderDragUsesMouse && event.buttons !== undefined && event.buttons === 0) {
+                endReorderDrag(event);
+                return;
+            }
+            if (event.cancelable) event.preventDefault();
             const container = document.getElementById('order-tiles');
             reorderDraggedTile.style.left = `${event.clientX - reorderDragOffsetX}px`;
             reorderDraggedTile.style.top = `${event.clientY - reorderDragOffsetY}px`;
@@ -1280,15 +1308,18 @@
 
         function endReorderDrag(event) {
             if (!reorderDraggedTile) return;
+            if (reorderDragPointerId !== null && event.pointerId !== undefined && event.pointerId !== reorderDragPointerId) return;
             const tile = reorderDraggedTile;
             document.removeEventListener('pointermove', moveReorderDrag);
             document.removeEventListener('mousemove', moveReorderDrag);
             document.removeEventListener('pointerup', endReorderDrag);
             document.removeEventListener('mouseup', endReorderDrag);
             document.removeEventListener('pointercancel', endReorderDrag);
-            if (event.pointerId !== undefined && tile.hasPointerCapture && tile.hasPointerCapture(event.pointerId)) {
-                tile.releasePointerCapture(event.pointerId);
-            }
+            document.removeEventListener('touchend', endReorderDrag);
+            document.removeEventListener('touchcancel', endReorderDrag);
+            window.removeEventListener('blur', endReorderDrag);
+            window.removeEventListener('pagehide', endReorderDrag);
+            document.removeEventListener('visibilitychange', handleReorderDragVisibility);
 
             if (reorderDragPlaceholder && reorderDragPlaceholder.parentElement) {
                 reorderDragPlaceholder.parentElement.insertBefore(tile, reorderDragPlaceholder);
@@ -1307,6 +1338,7 @@
 
             reorderDraggedTile = null;
             reorderDragPlaceholder = null;
+            reorderDragPointerId = null;
             updateReorderTileNumbers();
         }
 
