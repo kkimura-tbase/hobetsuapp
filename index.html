@@ -350,6 +350,10 @@
                         </div>
                     </div>
 
+                    <div id="typing-battle-message" class="hidden w-full mb-4 text-center">
+                        <p id="enemy-dialogue" class="bg-gray-800 text-white rounded-xl px-4 py-2 text-sm font-bold" aria-live="polite"></p>
+                        <p id="perfect-status" class="text-amber-700 text-sm font-bold mt-2" aria-live="polite"></p>
+                    </div>
                     <div class="w-full flex justify-center gap-6 items-center text-sm sm:text-base font-bold text-gray-500 mb-4 px-2">
                         <span id="quiz-progress" class="bg-gray-100 px-4 py-1.5 rounded-full">問題: 1 / 4</span>
                         <span class="bg-gray-100 px-4 py-1.5 rounded-full text-gray-600 shadow-inner">
@@ -399,6 +403,11 @@
                             <p class="text-lg text-gray-600 mb-2">平均解答タイム</p>
                             <p class="text-4xl font-bold"><span id="average-time" class="text-orange-500 text-5xl">0.0</span> <span class="text-2xl text-orange-400">秒</span></p>
                         </div>
+                    </div>
+                    <div id="typing-award" class="hidden bg-amber-50 border-2 border-amber-300 rounded-2xl p-5 mb-6" aria-live="polite">
+                        <p class="text-sm text-amber-700 font-bold">今回の称号</p>
+                        <p id="typing-award-title" class="text-2xl font-black text-amber-800 mt-2"></p>
+                        <p id="typing-award-detail" class="text-sm text-gray-600 mt-2"></p>
                     </div>
                     <button onclick="resetQuiz()" class="px-8 py-3 bg-indigo-500 text-white rounded-full font-bold shadow hover:bg-indigo-600 transition-colors">
                         <i class="fas fa-redo mr-2"></i> もう一度プレイ
@@ -1899,6 +1908,34 @@
         let enemyMaxHP = 10;
         let enemyCurrentHP = 10;
         let lastValidCount = 0;
+        let typingPerfectCount = 0;
+        let typingPaces = [];
+        let enemyDialogueStage = '';
+
+        function updateEnemyDialogue(stage) {
+            if (stage === enemyDialogueStage) return;
+            enemyDialogueStage = stage;
+            const lines = {
+                start: ['さあ、打ち切れるかな？', 'キミの挑戦、受けて立つ！', '今日の相手はこの私だ！'],
+                half: ['や、やるな…！', '速い！ でもまだまだ！', 'その調子で来るとは…！'],
+                low: ['あと少し…だと！？', '最後まで油断するなよ！', 'ま、待ってくれ〜！'],
+                counter: ['あわてず、もう一度だ！', '隙あり！ 立て直せるかな？', '落ち着けば打てるはずだ！'],
+                perfect: ['ノーミスだと…見事！', '完敗だ。お見事！', 'その一撃、まぶしすぎる！'],
+                defeated: ['やられた！ 次もがんばれよ！', 'いい勝負だった！', '最後まで打ち切ったな！'],
+                victory: ['また挑戦を待っているぞ！']
+            };
+            const choices = lines[stage];
+            document.getElementById('enemy-dialogue').textContent = choices[Math.floor(Math.random() * choices.length)];
+        }
+
+        function getTypingAward(perfect, total, paces, hp, failed) {
+            if (failed) return ['🔥 不屈のチャレンジャー', '次はもう1体先へ。再挑戦でリベンジ！'];
+            if (total > 0 && perfect === total) return ['👑 ノーミスの覇者', '全問ノーミス！ 完璧なバトルを達成。'];
+            if (perfect >= Math.ceil(total / 2)) return ['🎯 正確さの達人', '半分以上の問題をノーミスで撃破！'];
+            if (paces.length >= 2 && paces[paces.length - 1] >= paces[0] * 1.2) return ['⚡ ラストスパート名人', '最後の問題は最初より入力ペースが20%以上アップ！'];
+            if (hp <= 30) return ['❤️ 逆境のファイター', 'ピンチを乗り越えて最後まで勝ち抜いた！'];
+            return ['⚔️ バトルの完走者', 'すべての敵を撃破！ 次はノーミス撃破を狙おう。'];
+        }
         
         const enemyEmojis = ['👹', '👺', '👽', '👾', '🤖', '🧟', '🧛', '🐲'];
         
@@ -1988,6 +2025,10 @@
             quizMode = mode;
             currentQuestionIndex = 0;
             timeRecords = []; 
+            typingPerfectCount = 0;
+            typingPaces = [];
+            document.getElementById('typing-award').classList.add('hidden');
+            document.getElementById('typing-battle-message').classList.toggle('hidden', mode !== 'typing');
             clearAutoNext();
             
             if (quizMode === 'typing') {
@@ -1996,6 +2037,7 @@
                 document.getElementById('battle-ui').classList.remove('hidden');
                 document.getElementById('battle-ui').classList.add('flex');
                 document.getElementById('main-panel').classList.remove('damage-player');
+                document.getElementById('player-char').style.cssText = '';
             } else {
                 document.getElementById('battle-ui').classList.add('hidden');
                 document.getElementById('battle-ui').classList.remove('flex');
@@ -2051,6 +2093,9 @@
                 enemyMaxHP = targetLength;
                 enemyCurrentHP = enemyMaxHP;
                 updateHPBar('enemy', enemyCurrentHP, enemyMaxHP);
+                enemyDialogueStage = '';
+                updateEnemyDialogue('start');
+                document.getElementById('perfect-status').textContent = '✨ ノーミスで必殺フィニッシュ ＋ HP10回復';
                 
                 startTimer();
 
@@ -2165,6 +2210,8 @@
         }
 
         function gameOver() {
+            updateEnemyDialogue('victory');
+            document.getElementById('perfect-status').textContent = '🔥 次の挑戦でリベンジ！';
             clearAutoNext();
             clearInterval(timerInterval);
             document.getElementById('hidden-typing-input').disabled = true;
@@ -2184,6 +2231,7 @@
 
         function handleTypingInput() {
             const hiddenInput = document.getElementById('hidden-typing-input');
+            if (hiddenInput.disabled) return;
             const rawVal = hiddenInput.value;
             const typedChars = rawVal.replace(/[^a-zA-Z]/g, '');
             const correctChars = typingCharElements.map(span => span.dataset.targetChar).join('');
@@ -2201,6 +2249,8 @@
                     expectedIndex = i + 1;
                 } else {
                     hasMadeMistake = true;
+                    updateEnemyDialogue('counter');
+                    document.getElementById('perfect-status').textContent = '⚔️ 立て直して撃破しよう！';
                     currentMadeMistake = true;
                     
                     if (currentMistakeIndex === i) {
@@ -2257,6 +2307,7 @@
                 const damage = validTypedChars.length - lastValidCount;
                 enemyCurrentHP = Math.max(0, enemyCurrentHP - damage);
                 updateHPBar('enemy', enemyCurrentHP, enemyMaxHP);
+                updateEnemyDialogue(enemyCurrentHP / enemyMaxHP <= 0.25 ? 'low' : enemyCurrentHP / enemyMaxHP <= 0.5 ? 'half' : 'start');
                 
                 triggerAnim('player-char', 'anim-player-attack');
                 triggerAnim('enemy-char', 'anim-enemy-char-damage');
@@ -2301,12 +2352,14 @@
 
         function finishTypingQuestion() {
             const hiddenInput = document.getElementById('hidden-typing-input');
+            if (hiddenInput.disabled) return;
             const feedbackMsg = document.getElementById('feedback-message');
             
             const timeTaken = stopTimer();
             timeRecords.push(parseFloat(timeTaken)); 
 
             hiddenInput.disabled = true;
+            typingPaces.push(typingCharElements.length / Math.max(0.1, Number(timeTaken)));
             updateHPBar('enemy', 0, enemyMaxHP);
 
             const enemyChar = document.getElementById('enemy-char');
@@ -2315,9 +2368,20 @@
             enemyChar.style.opacity = '0';
 
             if (!hasMadeMistake) {
+                typingPerfectCount++;
+                const recovered = Math.min(10, PLAYER_MAX_HP - playerCurrentHP);
+                playerCurrentHP += recovered;
+                updateHPBar('player', playerCurrentHP, PLAYER_MAX_HP);
+                showHitEffect('⚡');
+                triggerAnim('player-char', 'anim-player-attack');
+                enemyChar.style.transform = 'scaleX(-1) translate(-180px, -220px) rotate(-720deg) scale(0)';
+                updateEnemyDialogue('perfect');
+                document.getElementById('perfect-status').textContent = `⚡ 必殺フィニッシュ！ ${recovered ? 'HP +' + recovered : 'HP満タン！'} ｜ ノーミス ${typingPerfectCount}体`;
                 feedbackMsg.innerHTML = `<span class="text-green-600 bg-green-100 px-6 py-2 rounded-full text-xl font-black shadow-sm"><i class="fas fa-trophy text-yellow-500"></i> PERFECT K.O.! <span class="text-sm ml-2 font-mono"><i class="fas fa-stopwatch text-gray-500"></i> ${timeTaken}秒</span></span>`;
             } else {
                 feedbackMsg.innerHTML = `<span class="text-indigo-600 bg-indigo-100 px-6 py-2 rounded-full text-xl font-black shadow-sm"><i class="fas fa-fist-raised"></i> K.O.! <span class="text-sm ml-2 font-mono text-gray-600"><i class="fas fa-stopwatch"></i> ${timeTaken}秒</span></span>`;
+                updateEnemyDialogue('defeated');
+                document.getElementById('perfect-status').textContent = '⚔️ 撃破！ 次はノーミス必殺を狙おう';
             }
 
             const isLast = (currentQuestionIndex >= quizQuestions.length - 1);
@@ -2373,6 +2437,13 @@
 
         function showResults(isGameOver = false) {
             clearAutoNext(); 
+            const award = document.getElementById('typing-award');
+            award.classList.toggle('hidden', quizMode !== 'typing');
+            if (quizMode === 'typing') {
+                const [name, detail] = getTypingAward(typingPerfectCount, quizQuestions.length, typingPaces, playerCurrentHP, isGameOver);
+                document.getElementById('typing-award-title').textContent = name;
+                document.getElementById('typing-award-detail').textContent = `${detail} ノーミス撃破 ${typingPerfectCount} / ${quizQuestions.length}体`;
+            }
             document.getElementById('quiz-play').classList.add('hidden');
             document.getElementById('quiz-play').classList.remove('flex');
             document.getElementById('quiz-result').classList.remove('hidden');
