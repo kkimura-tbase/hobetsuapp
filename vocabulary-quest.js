@@ -52,24 +52,37 @@ const VocabQuest = (function createVocabQuest() {
         try { localStorage.setItem(KEY, JSON.stringify(progress)); storageOK = true; }
         catch { storageOK = false; }
     }
-    function unlocked(index) { return stages.slice(0, index).every(s => progress.stars[s.key] > 0); }
+    function course(stage) { return stage.rank === '会話' ? 'conversation' : 'vocabulary'; }
+    function stageLabel(stage) {
+        const number = stage.rank === '会話' ? stage.number - 120 : stage.number;
+        return `${stage.rank === '会話' ? '会話 ' : ''}${stage.boss ? 'ボス ' + number / 5 : 'ステージ ' + number}`;
+    }
+    function unlocked(index) {
+        return !!stages[index] && stages.slice(0, index).filter(s => course(s) === course(stages[index])).every(s => progress.stars[s.key] > 0);
+    }
     function stars(score, count) { return score === count ? 3 : score >= Math.ceil(count * .9) ? 2 : score >= Math.ceil(count * .8) ? 1 : 0; }
     function earned() { return stages.filter(s => s.boss && progress.stars[s.key]).map(s => Math.ceil(s.number / 5) - 1); }
     function avatar() { return earned().includes(progress.mascot) ? mascots[progress.mascot] : '🧑‍🚀'; }
     function warning() { return storageOK ? '<p class="vq-note">進捗はこのブラウザに自動保存されます。</p>' : '<p class="vq-warning" role="alert">進捗を保存できません。この画面では遊べますが、閉じると今回の進捗が失われる場合があります。</p>'; }
     function shell(body) {
-        el().innerHTML = `<div class="vq-hero"><div class="vq-avatar">${avatar()}</div><div><p class="vq-eyebrow">WORD QUEST</p><h2>単語クエスト</h2><p>重要度Aから、一歩ずつ冒険しよう。</p></div></div>${body}${warning()}`;
+        el().innerHTML = `<div class="vq-hero"><div class="vq-avatar">${avatar()}</div><div><p class="vq-eyebrow">WORD QUEST</p><h2>単語クエスト</h2><p>単語と会話、2つのコースで冒険しよう。</p></div></div>${body}${warning()}`;
     }
     function open() {
         cancelAdvance();
         run = null;
-        const next = stages.findIndex((s,i) => unlocked(i) && !progress.stars[s.key]);
+        const next = stages.findIndex((s,i) => course(s) === 'vocabulary' && unlocked(i) && !progress.stars[s.key]);
+        const conversationNext = stages.findIndex((s,i) => course(s) === 'conversation' && unlocked(i) && !progress.stars[s.key]);
+        const courseCards = [['vocabulary', '📚 単語コース', next], ['conversation', '💬 会話表現コース', conversationNext]].map(([id, title, index]) => {
+            const total = id === 'conversation' ? 10 : 120;
+            const done = stages.filter(s => course(s) === id && !s.boss && progress.stars[s.key]).length;
+            return `<div class="vq-card"><h3>${title}</h3><p>${done} / ${total} ステージクリア · ${id === 'conversation' ? '単語コースとは別に、会話ステージ1から挑戦できます。' : '重要度A → B → Cの順に進みます。'}</p>${index < 0 ? '<p>🎉 コース制覇！</p>' : `<button class="vq-primary" data-start="${index}">${stageLabel(stages[index])} に挑む →</button>`}</div>`;
+        }).join('');
         const cleared = stages.filter(s => !s.boss && progress.stars[s.key]).length;
         const totalStars = Object.values(progress.stars).reduce((a,b) => a + b, 0);
         shell(`<div class="vq-stats"><span>🚩 ${cleared} / 130 ステージ</span><span>⭐ ${totalStars} / ${stages.length * 3}</span><span>🎁 ${earned().length} / ${mascots.length}</span></div>
-            <div class="vq-card"><h3>${next < 0 ? '全ステージ制覇！' : '次の冒険へ'}</h3><p>10問中8問正解でクリア。9問で★★、全問で★★★。間違えた問題は最後に解き直そう。時間制限はありません。</p><p>5ステージごとに復習ボスが登場。宝箱から仲間を集めよう！</p>${next < 0 ? '' : `<button class="vq-primary" data-start="${next}">${stages[next].boss ? '🐲 復習ボス' : `ステージ ${stages[next].number}`} に挑む →</button>`}</div>
+            <div class="vq-card"><h3>冒険のルール</h3><p>10問中8問正解でクリア。9問で★★、全問で★★★。間違えた問題は最後に解き直そう。時間制限はありません。</p><p>5ステージごとに復習ボスが登場。宝箱から仲間を集めよう！</p></div>${courseCards}
             <details class="vq-card"><summary>仲間コレクション (${earned().length} / ${mascots.length})</summary><div class="vq-collection">${mascots.map((m,i) => `<button data-mascot="${i}" ${earned().includes(i) ? '' : 'disabled'} aria-label="仲間${i+1}${progress.mascot === i ? ' 選択中' : ''}" aria-pressed="${progress.mascot === i}" class="${progress.mascot === i ? 'vq-selected' : ''}">${earned().includes(i) ? m : '🔒'}<small>ボス${i+1}</small></button>`).join('')}</div></details>
-            ${ranks.map(rank => { const items = stages.map((s,i) => ({...s,index:i})).filter(s => s.rank === rank); const active = next >= 0 && stages[next].rank === rank; return `<details class="vq-card" ${active ? 'open' : ''}><summary>${rank === '会話' ? '会話表現（重要度指定なし）' : `重要度 ${rank}`} <span class="vq-note">${items.filter(s=>progress.stars[s.key]).length} / ${items.length} クリア</span></summary><div class="vq-map">${items.map(s=>`<button data-start="${s.index}" ${unlocked(s.index) ? '' : 'disabled'} ${s.index === next ? 'aria-current="step"' : ''} class="${s.boss ? 'vq-boss' : ''} ${s.index === next ? 'vq-current' : ''}"><span>${unlocked(s.index) ? s.boss ? '🐲' : progress.stars[s.key] ? '🏁' : '🌱' : '🔒'}</span><strong>${s.boss ? `ボス ${s.number / 5}` : `STAGE ${s.number}`}</strong><small>${'★'.repeat(progress.stars[s.key] || 0)}${'☆'.repeat(3-(progress.stars[s.key] || 0))}</small></button>`).join('')}</div></details>`; }).join('')}`);
+            ${ranks.map(rank => { const items = stages.map((s,i) => ({...s,index:i})).filter(s => s.rank === rank); const current = rank === '会話' ? conversationNext : next; const active = current >= 0 && stages[current].rank === rank; return `<details class="vq-card" ${active ? 'open' : ''}><summary>${rank === '会話' ? '会話表現（独立コース）' : `重要度 ${rank}`} <span class="vq-note">${items.filter(s=>progress.stars[s.key]).length} / ${items.length} クリア</span></summary><div class="vq-map">${items.map(s=>`<button data-start="${s.index}" ${unlocked(s.index) ? '' : 'disabled'} ${s.index === current ? 'aria-current="step"' : ''} class="${s.boss ? 'vq-boss' : ''} ${s.index === current ? 'vq-current' : ''}"><span>${unlocked(s.index) ? s.boss ? '🐲' : progress.stars[s.key] ? '🏁' : '🌱' : '🔒'}</span><strong>${stageLabel(s)}</strong><small>${'★'.repeat(progress.stars[s.key] || 0)}${'☆'.repeat(3-(progress.stars[s.key] || 0))}</small></button>`).join('')}</div></details>`; }).join('')}`);
     }
     function start(index) {
         if (!Number.isInteger(index) || !stages[index] || !unlocked(index)) return;
@@ -94,7 +107,7 @@ const VocabQuest = (function createVocabQuest() {
         run.locked = false;
         const word = run.queue[run.cursor];
         const choices = options(word);
-        shell(`<div class="vq-stats"><button data-map>← マップへ</button><span>${run.stage.boss ? '🐲 復習ボス' : `STAGE ${run.stage.number}`} · ${run.retry ? '解き直し' : `問題 ${run.cursor+1} / ${run.queue.length}`}</span><span>⭐ ${run.score} 正解</span></div>
+        shell(`<div class="vq-stats"><button data-map>← マップへ</button><span>${stageLabel(run.stage)} · ${run.retry ? '解き直し' : `問題 ${run.cursor+1} / ${run.queue.length}`}</span><span>⭐ ${run.score} 正解</span></div>
             <progress class="vq-progress" max="${run.queue.length}" value="${run.cursor}"></progress>
             <div class="vq-question vq-card"><p class="vq-eyebrow">${run.retry ? 'RETRY · 星は最初の回答で決まります' : run.stage.boss ? 'BOSS REVIEW · 苦手を乗り越えよう' : `重要度 ${esc(word.rank)} · ${esc(word.category)}`}</p><h3>${esc(word.en)}</h3><p>日本語の意味を選ぼう</p></div>
             <div class="vq-options">${choices.map((choice,i)=>`<button data-answer="${i}"><span>${i+1}</span>${choiceLabel(choice)}</button>`).join('')}</div>
@@ -150,7 +163,7 @@ const VocabQuest = (function createVocabQuest() {
         const reward = rating && fresh && run.stage.boss;
         if (reward) progress.mascot = Math.ceil(run.stage.number / 5) - 1;
         save();
-        shell(`<div class="vq-result vq-card"><div class="vq-avatar">${reward ? mascots[progress.mascot] : rating ? '🏆' : '🌱'}</div><h3>${rating ? 'ステージクリア！' : 'もう一度チャレンジ！'}</h3><div class="vq-stars">${'★'.repeat(rating)}${'☆'.repeat(3-rating)}</div><p>最初の回答：${run.score} / ${Math.min(10,run.stage.words.length)}問正解</p><p>${run.wrong.length ? '間違えた単語の解き直しも完了！' : '全問、最初の挑戦で正解！'}</p><p>${reward ? '🎁 宝箱オープン！ 新しい仲間が加わった！' : rating ? '星を集めて、次の冒険へ。' : '8問以上正解で次のステージが解放されます。'}</p><div class="vq-actions">${rating && run.index+1 < stages.length ? `<button class="vq-primary" data-start="${run.index+1}">次の冒険へ →</button>` : ''}<button class="vq-primary" data-start="${run.index}">もう一度挑戦</button><button data-map>マップへ戻る</button></div></div>`);
+        shell(`<div class="vq-result vq-card"><div class="vq-avatar">${reward ? mascots[progress.mascot] : rating ? '🏆' : '🌱'}</div><h3>${rating ? 'ステージクリア！' : 'もう一度チャレンジ！'}</h3><div class="vq-stars">${'★'.repeat(rating)}${'☆'.repeat(3-rating)}</div><p>最初の回答：${run.score} / ${Math.min(10,run.stage.words.length)}問正解</p><p>${run.wrong.length ? '間違えた単語の解き直しも完了！' : '全問、最初の挑戦で正解！'}</p><p>${reward ? '🎁 宝箱オープン！ 新しい仲間が加わった！' : rating ? '星を集めて、次の冒険へ。' : '8問以上正解で次のステージが解放されます。'}</p><div class="vq-actions">${rating && run.index+1 < stages.length && course(stages[run.index+1]) === course(run.stage) ? `<button class="vq-primary" data-start="${run.index+1}">次の冒険へ →</button>` : ''}<button class="vq-primary" data-start="${run.index}">もう一度挑戦</button><button data-map>マップへ戻る</button></div></div>`);
     }
     function mount() {
         document.getElementById('vocabulary-quest-style')?.remove();
