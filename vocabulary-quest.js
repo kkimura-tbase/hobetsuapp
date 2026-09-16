@@ -27,6 +27,41 @@ const VocabQuest = (function createVocabQuest() {
         }
     } catch { storageOK = false; }
     let run = null;
+    let spoken = null;
+    function stopPronunciation() {
+        if (!spoken) return;
+        spoken = null;
+        globalThis.speechSynthesis?.cancel();
+    }
+    function pronounce() {
+        if (!run || run.finished) return;
+        const status = document.getElementById('vq-speech-status');
+        const synth = globalThis.speechSynthesis;
+        if (!synth || typeof globalThis.SpeechSynthesisUtterance !== 'function') {
+            status.textContent = 'このブラウザは読み上げに対応していません。';
+            return;
+        }
+        stopPronunciation();
+        const utterance = new SpeechSynthesisUtterance(run.queue[run.cursor].en);
+        utterance.lang = 'en-US';
+        utterance.rate = 0.85;
+        const voices = synth.getVoices();
+        const voice = voices.find(v => /^en[-_]US$/i.test(v.lang)) || voices.find(v => /^en(?:[-_]|$)/i.test(v.lang));
+        if (voice) utterance.voice = voice;
+        spoken = utterance;
+        status.textContent = '🔊 発音中…';
+        utterance.onend = () => {
+            if (spoken !== utterance) return;
+            spoken = null;
+            status.textContent = '単語をタップしてもう一度聞く';
+        };
+        utterance.onerror = () => {
+            if (spoken !== utterance) return;
+            spoken = null;
+            status.textContent = '読み上げできませんでした。もう一度タップしてください。';
+        };
+        try { synth.speak(utterance); } catch { utterance.onerror(); }
+    }
     let advanceTimer = null;
     function cancelAdvance() {
         clearTimeout(advanceTimer);
@@ -65,6 +100,7 @@ const VocabQuest = (function createVocabQuest() {
         el().innerHTML = `<div class="vq-hero"><div class="vq-avatar">${avatar()}</div><div><p class="vq-eyebrow">WORD QUEST</p><h2>単語クエスト</h2><p>単語と会話、2つのコースで冒険しよう。</p></div></div>${body}${warning()}`;
     }
     function open() {
+        stopPronunciation();
         cancelAdvance();
         run = null;
         const next = stages.findIndex((s,i) => course(s) === 'vocabulary' && unlocked(i) && !progress.stars[s.key]);
@@ -101,12 +137,13 @@ const VocabQuest = (function createVocabQuest() {
         return shuffle(choices);
     }
     function question() {
+        stopPronunciation();
         run.locked = false;
         const word = run.queue[run.cursor];
         const choices = options(word);
         shell(`<div class="vq-stats"><button data-map>← マップへ</button><span>${stageLabel(run.stage)} · ${run.retry ? '解き直し' : `問題 ${run.cursor+1} / ${run.queue.length}`}</span><span>⭐ ${run.score} 正解</span></div>
             <progress class="vq-progress" max="${run.queue.length}" value="${run.cursor}"></progress>
-            <div class="vq-question vq-card"><p class="vq-eyebrow">${run.retry ? 'RETRY · 星は最初の回答で決まります' : run.stage.boss ? 'BOSS REVIEW · 苦手を乗り越えよう' : `重要度 ${esc(word.rank)} · ${esc(word.category)}`}</p><h3>${esc(word.en)}</h3><p>日本語の意味を選ぼう</p></div>
+            <div class="vq-question vq-card"><p class="vq-eyebrow">${run.retry ? 'RETRY · 星は最初の回答で決まります' : run.stage.boss ? 'BOSS REVIEW · 苦手を乗り越えよう' : `重要度 ${esc(word.rank)} · ${esc(word.category)}`}</p><h3><button data-speak class="vq-speak" aria-label="${esc(word.en)} の発音を聞く">${esc(word.en)}</button></h3><p id="vq-speech-status" class="vq-note" role="status">単語をタップすると発音します 🔊</p><p>日本語の意味を選ぼう</p></div>
             <div class="vq-options">${choices.map((choice,i)=>`<button data-answer="${i}"><span>${i+1}</span>${choiceLabel(choice)}</button>`).join('')}</div>
             <div id="vq-feedback" class="vq-feedback" role="status" aria-live="polite"></div><button id="vq-next" class="vq-primary" data-next hidden>次へ →</button>`);
         run.choices = choices;
@@ -149,6 +186,7 @@ const VocabQuest = (function createVocabQuest() {
         finish();
     }
     function finish() {
+        stopPronunciation();
         if (run.finished) return;
         run.finished = true;
         const rating = stars(run.score, Math.min(10, run.stage.words.length));
@@ -165,11 +203,13 @@ const VocabQuest = (function createVocabQuest() {
         style.id = 'vocabulary-quest-style';
         style.textContent = `#view-vocab{color:#27334b}.vq-hero{display:flex;gap:18px;align-items:center;padding:24px;border-radius:20px;background:linear-gradient(125deg,#312e81,#635bda);color:white;margin-bottom:18px}.vq-hero h2{font-size:26px;font-weight:900}.vq-hero p{font-size:13px}.vq-avatar{font-size:52px}.vq-eyebrow{font-size:12px;font-weight:800;letter-spacing:.09em}.vq-stats{display:flex;flex-wrap:wrap;gap:12px;justify-content:space-between;font-weight:700;font-size:13px;margin:16px 0}.vq-card{padding:20px;border:1px solid #dfe3f1;border-radius:18px;background:#fff;margin:16px 0;box-shadow:0 4px 12px #312e8107}.vq-card h3{font-size:21px;font-weight:800}.vq-card p{margin:8px 0;line-height:1.7}.vq-card summary{cursor:pointer;font-weight:800}.vq-primary{display:inline-block;background:#5145cd;color:white;border-radius:12px;padding:13px 20px;font-weight:800;margin-top:12px;min-height:48px}.vq-primary[hidden]{display:none}.vq-map{display:grid;grid-template-columns:repeat(auto-fit,minmax(100px,1fr));gap:12px;margin-top:18px}.vq-map button{border:2px solid #e3e5f1;border-radius:16px;min-height:112px;display:flex;align-items:center;justify-content:center;flex-direction:column;gap:5px;background:#f8f9ff}.vq-map button span{font-size:26px}.vq-map small,.vq-stars{color:#a86600}.vq-map button.vq-boss{background:#fff6e4;border-color:#f1c980}.vq-map button.vq-current{border-color:#5145cd;box-shadow:0 0 0 3px #e2ddff}.vq-map button:disabled{opacity:.5}.vq-note{font-size:12px;color:#64748b;margin-top:14px}.vq-warning{color:#92400e;background:#fff4d6;padding:12px;border-radius:12px}.vq-collection{display:grid;grid-template-columns:repeat(auto-fit,minmax(64px,1fr));gap:8px;margin-top:16px}.vq-collection button{padding:8px;border:2px solid #e5e7eb;border-radius:12px;font-size:30px}.vq-collection small{display:block;font-size:10px}.vq-collection .vq-selected{border-color:#5145cd;background:#eeebff}.vq-question{text-align:center;padding:30px 16px}.vq-question h3{font-size:clamp(24px,5vw,38px);overflow-wrap:anywhere;margin:18px 0}.vq-options{display:grid;grid-template-columns:1fr 1fr;gap:12px}.vq-options button{display:flex;gap:12px;align-items:center;text-align:left;padding:18px;border:2px solid #dfe3f1;border-radius:14px;background:white;font-weight:700;min-height:76px;overflow-wrap:anywhere}.vq-options button span{font-size:12px;background:#f0edff;padding:3px 8px;border-radius:6px;color:#5145cd}.vq-options .vq-right{background:#dcfce7;border-color:#16a34a;color:#14532d}.vq-options .vq-wrong{background:#fee2e2;border-color:#dc2626;color:#7f1d1d}.vq-feedback{min-height:56px;padding:16px 0;font-weight:700}.vq-progress{width:100%;height:10px;accent-color:#635bda}.vq-result{text-align:center;padding:30px 18px}.vq-stars{font-size:42px;letter-spacing:8px}.vq-actions{display:flex;gap:12px;justify-content:center;flex-wrap:wrap}#view-vocab button:focus-visible{outline:3px solid #f59e0b;outline-offset:3px}@media(max-width:520px){.vq-options{grid-template-columns:1fr}.vq-hero{padding:18px}.vq-hero h2{font-size:22px}.vq-card{padding:16px}.vq-options button{min-height:64px;padding:14px}}`;
         style.textContent += `.vq-options button > span{flex-shrink:0}.vq-meaning{min-width:0;line-height:1.5}.vq-meaning-primary{display:block;font-size:19px;font-weight:800;color:#3730a3}.vq-meaning-secondary{display:block;margin-top:5px;font-size:13px;font-weight:400;color:#64748b}.vq-right .vq-meaning-primary{color:#14532d}.vq-wrong .vq-meaning-primary{color:#7f1d1d}.vq-right .vq-meaning-secondary,.vq-wrong .vq-meaning-secondary{color:#475569}`;
+        style.textContent += `.vq-speak{padding:8px 14px;border-radius:12px;color:#3730a3;max-width:100%;cursor:pointer}.vq-speak::after{content:' 🔊';font-size:18px;white-space:nowrap}.vq-speak:hover{background:#eeebff}.vq-speak:active{background:#ddd6fe}`;
         document.head.appendChild(style);
         el().addEventListener('click', event => {
             const button = event.target.closest('button');
             if (!button || button.disabled) return;
             if (button.hasAttribute('data-start')) start(Number(button.dataset.start));
+            else if (button.hasAttribute('data-speak')) pronounce();
             else if (button.hasAttribute('data-answer')) answer(Number(button.dataset.answer));
             else if (button.hasAttribute('data-next')) next();
             else if (button.hasAttribute('data-map')) { if (!run || run.finished || confirm('マップへ戻りますか？ この挑戦の途中経過は保存されません。')) open(); }
@@ -177,6 +217,6 @@ const VocabQuest = (function createVocabQuest() {
         });
     }
     mount();
-    return {open, leave: () => { cancelAdvance(); run = null; }, stages, options, stars,
+    return {open, leave: () => { cancelAdvance(); stopPronunciation(); run = null; }, stages, options, stars,
         exportSource: () => `const vocabularyData = ${JSON.stringify(vocabularyData).replace(/</g, '\\u003c')};\nconst VocabQuest = (${createVocabQuest.toString()})();`};
 })();

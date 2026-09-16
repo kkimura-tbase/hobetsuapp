@@ -22,7 +22,7 @@ function click(key, value='') {
 }
 function answer(correct=true, advance=true) {
     const html=node('view-vocab').innerHTML;
-    const en=html.match(/<h3>(.*?)<\/h3>/)[1].replace(/&#39;/g,"'").replace(/&amp;/g,'&').replace(/&quot;/g,'"').replace(/&lt;/g,'<').replace(/&gt;/g,'>');
+    const en=html.match(/<h3>(.*?)<\/h3>/)[1].replace(/<[^>]*>/g,'').replace(/&#39;/g,"'").replace(/&amp;/g,'&').replace(/&quot;/g,'"').replace(/&lt;/g,'<').replace(/&gt;/g,'>');
     const ja=execute(`vocabularyData.find(w=>w.en===${JSON.stringify(en)}).ja`);
     const opts=[...html.matchAll(/data-answer="(\d)"><span>\d<\/span>(.*?)<\/button>/g)];
     const right=opts.findIndex(m=>m[2].replace(/<[^>]*>/g,'').replace(/&#39;/g,"'").replace(/&amp;/g,'&').replace(/&quot;/g,'"').replace(/&lt;/g,'<').replace(/&gt;/g,'>') === ja);
@@ -96,6 +96,24 @@ for(let s=145;s<=149;s++){click('start',s);for(let i=0;i<10;i++)answer();}
 assert.equal(JSON.parse([...storage.values()][0]).stars['boss-125'],3);
 assert.equal(JSON.parse([...storage.values()][0]).mascot,24,'stable existing reward IDs');
 click('start',150); assert(node('view-vocab').innerHTML.includes('会話 ステージ 6'));
+click('speak');
+assert(node('vq-speech-status').textContent.includes('対応していません'));
+const speechCalls=[];
+let cancelled=0;
+context.SpeechSynthesisUtterance = class {constructor(text){this.text=text;}};
+context.speechSynthesis={getVoices:()=>[{lang:'ja-JP'},{lang:'en-US'}],speak:u=>speechCalls.push(u),cancel:()=>cancelled++};
+click('speak');
+assert.equal(speechCalls.length,1);
+assert.equal(speechCalls[0].lang,'en-US');
+assert.equal(speechCalls[0].voice.lang,'en-US');
+assert(execute(`vocabularyData.some(w=>w.rank==='会話' && w.en===${JSON.stringify(speechCalls[0].text)})`));
+click('speak'); assert.equal(cancelled,1,'repeated taps cancel previous speech');
+speechCalls[0].onend(); assert(node('vq-speech-status').textContent.includes('発音中'));
 execute('VocabQuest.leave()');
+assert.equal(cancelled,2,'tab exit cancels speech');
+click('start',0);click('speak');answer();
+assert.equal(cancelled,3,'next question cancels speech');
+click('speak');speechCalls.at(-1).onerror();
+assert(node('vq-speech-status').textContent.includes('読み上げできません'));
 for(const match of html.matchAll(/<script(?:\s[^>]*)?>([\s\S]*?)<\/script>/gi))new vm.Script(match[1]);
 console.log('PASS: 1300 words, 156 stages, all options, thresholds, locks, retries, persistence, best score, boss reward, syntax');
