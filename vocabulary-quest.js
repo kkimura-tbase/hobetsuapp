@@ -28,12 +28,9 @@ const VocabQuest = (function createVocabQuest() {
     } catch { storageOK = false; }
     let run = null;
     let advanceTimer = null;
-    let countdownTimer = null;
     function cancelAdvance() {
         clearTimeout(advanceTimer);
-        clearTimeout(countdownTimer);
         advanceTimer = null;
-        countdownTimer = null;
     }
     const el = () => document.getElementById('view-vocab');
     const esc = text => String(text).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
@@ -135,12 +132,9 @@ const VocabQuest = (function createVocabQuest() {
         nextButton.hidden = false;
         nextButton.focus({preventScroll:true});
         if (correct) {
-            feedback.textContent = '✨ 正解！ 2秒後に自動で進みます';
+            feedback.textContent = '✨ 正解！ 1秒後に自動で進みます';
             nextButton.textContent = '今すぐ次へ →';
-            countdownTimer = setTimeout(() => {
-                feedback.textContent = '✨ 正解！ 1秒後に自動で進みます';
-            }, 1000);
-            advanceTimer = setTimeout(next, 2000);
+            advanceTimer = setTimeout(next, 1000);
         }
     }
     function next() {

@@ -62,15 +62,11 @@ assert(!node('view-vocab').innerHTML.includes('宝箱オープン'),'no duplicat
 const html=fs.readFileSync('index.html','utf8');
 click('start',0);
 answer(true,false);
-assert.equal(timers.size,2);
-assert(node('vq-feedback').textContent.includes('2秒後'));
-const countdown=[...timers.values()].find(t=>t.ms===1000);
-assert(countdown);
-countdown.fn();
+assert.equal(timers.size,1);
 assert(node('vq-feedback').textContent.includes('1秒後'));
 assert(node('view-vocab').innerHTML.includes('問題 1 / 10'));
-const scheduled=[...timers.values()].find(t=>t.ms===2000);
-assert.equal(scheduled.ms,2000);
+const scheduled=[...timers.values()][0];
+assert.equal(scheduled.ms,1000);
 scheduled.fn();
 assert(node('view-vocab').innerHTML.includes('問題 2 / 10'));
 assert.equal(timers.size,0);
