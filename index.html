@@ -243,7 +243,8 @@
         </header>
 
         <!-- タブナビゲーション (固定) -->
-        <nav class="flex justify-center space-x-1 sm:space-x-2 mb-4 flex-shrink-0 overflow-x-auto pb-2 scrollbar-hide">
+        <nav style="justify-content: safe center" class="flex space-x-1 sm:space-x-2 mb-4 flex-shrink-0 overflow-x-auto pb-2 scrollbar-hide">
+            <button id="tab-vocab" class="px-3 py-2 rounded-full text-xs sm:text-sm font-bold border whitespace-nowrap bg-white text-indigo-600" onclick="switchTab('vocab')">🗺️ 単語クエスト</button>
             <button id="tab-list" class="px-3 py-2 sm:px-4 sm:py-2 rounded-full text-xs sm:text-sm font-bold transition-all border whitespace-nowrap bg-indigo-600 text-white shadow-md border-indigo-600" onclick="switchTab('list')">
                 <i class="fas fa-book-open mr-1"></i> フレーズ集
             </button>
@@ -284,6 +285,7 @@
             <!-- ==============================
                  2. クイズ（タイピング）ビュー
             ============================== -->
+            <section id="view-vocab" class="hidden pb-10" aria-label="単語クエスト"></section>
             <div id="view-quiz" class="hidden fade-in text-center pb-10">
                 
                 <!-- クイズ設定画面 -->
@@ -1076,6 +1078,16 @@
 
         function exportCode() {
             const clone = document.documentElement.cloneNode(true);
+            clone.querySelector('#view-vocab').classList.add('hidden');
+            clone.querySelector('#view-vocab').innerHTML = '';
+            clone.querySelector('#tab-vocab').className = 'px-3 py-2 rounded-full text-xs sm:text-sm font-bold border whitespace-nowrap bg-white text-indigo-600';
+            clone.querySelector('script[src="vocabulary-data.js"]')?.remove();
+            clone.querySelector('script[src="vocabulary-quest.js"]')?.remove();
+            clone.querySelector('#vocabulary-quest-export')?.remove();
+            const vocabScript = document.createElement('script');
+            vocabScript.id = 'vocabulary-quest-export';
+            vocabScript.textContent = VocabQuest.exportSource();
+            clone.querySelector('body').appendChild(vocabScript);
             const baseClass = "px-3 py-2 sm:px-4 sm:py-2 rounded-full text-xs sm:text-sm font-bold transition-all border whitespace-nowrap ";
             
             clone.querySelector('#tab-list').className = baseClass + "bg-indigo-600 text-white shadow-md border-indigo-600";
@@ -2710,6 +2722,11 @@
         // 🔄 画面タブ切り替え処理
         // ==========================================
         function switchTab(tabName) {
+            document.getElementById('view-vocab').classList.toggle('hidden', tabName !== 'vocab');
+            document.getElementById('tab-vocab').classList.toggle('bg-indigo-600', tabName === 'vocab');
+            document.getElementById('tab-vocab').classList.toggle('text-white', tabName === 'vocab');
+            if (typeof VocabQuest !== 'undefined') VocabQuest.leave();
+            if (tabName === 'vocab') VocabQuest.open();
             clearAutoNext(); 
             clearInterval(timerInterval);
             if(reorderGameActive) endReorderGame(true);
@@ -2797,5 +2814,7 @@
     </script>
 
 
+<script src="vocabulary-data.js"></script>
+<script src="vocabulary-quest.js"></script>
 </body>
 </html>
