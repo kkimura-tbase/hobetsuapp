@@ -252,6 +252,7 @@
             @media(min-width:640px) {#feature-nav {gap:8px}#feature-nav > button {flex-direction:row;gap:7px;min-height:46px;padding:8px 6px}#feature-nav > button > i,#feature-nav .nav-icon {font-size:17px}}
             @media(max-height:500px) and (min-width:640px) {#feature-nav {grid-template-columns:repeat(8,minmax(0,1fr))}#feature-nav > button {flex-direction:column;font-size:10px}}
         </style>
+        <style>#feature-nav {grid-template-columns:repeat(3,minmax(0,1fr))}#feature-nav > button {min-height:54px}@media(min-width:900px) {#feature-nav {grid-template-columns:repeat(9,minmax(0,1fr))}#feature-nav > button {flex-direction:column;font-size:11px}}</style>
         <nav id="feature-nav" aria-label="学習メニュー">
             <button id="tab-vocab" class="px-3 py-2 rounded-full text-xs sm:text-sm font-bold border whitespace-nowrap bg-white text-indigo-600" onclick="switchTab('vocab')"><span class="nav-icon" aria-hidden="true">🗺️</span> 単語クエスト</button>
             <button id="tab-list" aria-current="page" class="px-3 py-2 sm:px-4 sm:py-2 rounded-full text-xs sm:text-sm font-bold transition-all border whitespace-nowrap bg-indigo-600 text-white shadow-md border-indigo-600" onclick="switchTab('list')">
@@ -270,6 +271,7 @@
                 <i class="fas fa-meteor mr-1"></i> 疑問詞特訓
             </button>
             <button id="tab-passive" class="px-3 py-2 rounded-full text-xs sm:text-sm font-bold border whitespace-nowrap bg-white text-indigo-600" onclick="switchTab('passive')"><span class="nav-icon" aria-hidden="true">🃏</span> 受動態バトル</button>
+            <button id="tab-infinitive" class="bg-white text-indigo-600 font-bold border" onclick="switchTab('infinitive')"><span class="nav-icon" aria-hidden="true">⚡</span> 不定詞バトル</button>
             <button id="tab-admin" class="px-3 py-2 sm:px-4 sm:py-2 rounded-full text-xs sm:text-sm font-bold transition-all border whitespace-nowrap bg-gray-100 text-gray-600 hover:bg-gray-200 shadow-sm border-transparent" onclick="switchTab('admin')">
                 <i class="fas fa-cog"></i> 管理
             </button>
@@ -297,6 +299,7 @@
             ============================== -->
             <section id="view-vocab" class="hidden pb-10" aria-label="単語クエスト"></section>
             <section id="view-passive" class="hidden pb-10" aria-label="受動態カードバトル"></section>
+            <section id="view-infinitive" class="hidden pb-10" aria-label="不定詞カードバトル"></section>
             <div id="view-quiz" class="hidden fade-in text-center pb-10">
                 
                 <!-- クイズ設定画面 -->
@@ -1124,6 +1127,14 @@
             passiveScript.id = 'passive-battle-export';
             passiveScript.textContent = PassiveBattle.exportSource();
             clone.querySelector('body').appendChild(passiveScript);
+            clone.querySelector('#view-infinitive').classList.add('hidden');
+            clone.querySelector('#view-infinitive').innerHTML = '';
+            clone.querySelector('script[src="infinitive-battle.js"]')?.remove();
+            clone.querySelector('#infinitive-battle-export')?.remove();
+            const infinitiveScript = document.createElement('script');
+            infinitiveScript.id = 'infinitive-battle-export';
+            infinitiveScript.textContent = InfinitiveBattle.exportSource();
+            clone.querySelector('body').appendChild(infinitiveScript);
             const baseClass = "px-3 py-2 sm:px-4 sm:py-2 rounded-full text-xs sm:text-sm font-bold transition-all border whitespace-nowrap ";
             
             clone.querySelector('#tab-list').className = baseClass + "bg-indigo-600 text-white shadow-md border-indigo-600";
@@ -2758,6 +2769,11 @@
         // 🔄 画面タブ切り替え処理
         // ==========================================
         function switchTab(tabName) {
+            document.getElementById('view-infinitive').classList.toggle('hidden', tabName !== 'infinitive');
+            if (typeof InfinitiveBattle !== 'undefined') {
+                if (tabName === 'infinitive') InfinitiveBattle.open();
+                else InfinitiveBattle.leave();
+            }
             document.querySelectorAll('#feature-nav > button').forEach(button => {
                 if (button.id === 'tab-' + tabName) button.setAttribute('aria-current', 'page');
                 else button.removeAttribute('aria-current');
@@ -2863,5 +2879,6 @@
 <script src="vocabulary-data.js"></script>
 <script src="vocabulary-quest.js"></script>
 <script src="passive-battle.js"></script>
+<script src="infinitive-battle.js"></script>
 </body>
 </html>
