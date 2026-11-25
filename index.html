@@ -299,7 +299,7 @@
             ============================== -->
             <section id="view-vocab" class="hidden pb-10" aria-label="単語クエスト"></section>
             <section id="view-passive" class="hidden pb-10" aria-label="受動態カードバトル"></section>
-            <section id="view-infinitive" class="hidden pb-10" aria-label="不定詞カードバトル"></section>
+            <section id="view-infinitive" class="hidden pb-10" aria-label="不定詞タイピングバトル"></section>
             <div id="view-quiz" class="hidden fade-in text-center pb-10">
                 
                 <!-- クイズ設定画面 -->
@@ -1136,6 +1136,7 @@
             clone.querySelector('body').appendChild(passiveScript);
             clone.querySelector('#view-infinitive').classList.add('hidden');
             clone.querySelector('#view-infinitive').innerHTML = '';
+            clone.querySelector('script[src="infinitive-fighter-art.js"]')?.remove();
             clone.querySelector('script[src="infinitive-battle.js"]')?.remove();
             clone.querySelector('#infinitive-battle-export')?.remove();
             const infinitiveScript = document.createElement('script');
@@ -2886,6 +2887,7 @@
 <script src="vocabulary-data.js"></script>
 <script src="vocabulary-quest.js"></script>
 <script src="passive-battle.js"></script>
+<script src="infinitive-fighter-art.js"></script>
 <script src="infinitive-battle.js"></script>
 </body>
 </html>
